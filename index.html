@@ -193,11 +193,11 @@ async function saveUser(u){
   u.updated_at=new Date().toISOString();
   if(!u.created_at)u.created_at=new Date().toISOString();
   var body=JSON.stringify(u);
-  // Use upsert — single call, handles both insert and update
-  var result=await dbQ('pdp_users','POST',body,{
-    'Prefer':'return=representation,resolution=merge-duplicates',
-    'on_conflict':'email'
-  });
+  var result=await dbQ(
+    'pdp_users?on_conflict=email',
+    'POST',body,
+    {'Prefer':'return=representation,resolution=merge-duplicates'}
+  );
   return result;
 }
 async function getAllUsers(){
@@ -519,12 +519,14 @@ async function savePlan(){
   u.plan=plan;
   u.habits=habits;
   S.ud=u;
+  console.log('Saving user:', u.email, 'habits:', habits.length, 'plan keys:', Object.keys(plan).length);
   var saveOk=await saveUser(u);
+  console.log('Save result:', saveOk);
   set({saving:false});
   if(!saveOk){
-    toast('❌ Save failed. Check your connection and try again.');
+    toast('❌ Save failed — check browser console for error details.');
   }else{
-    toast('✓ Plan saved successfully!');
+    toast('✓ Plan saved! ' + habits.length + ' habit(s) recorded.');
   }
 }
 
@@ -602,14 +604,23 @@ function rDash(){
   var streak=0;for(var sd=day;sd>=1;sd--){if(h.every(function(_,i){return ci[sd]&&ci[sd][i];})){streak++;}else{break;}}
   return`
   <div class="day-card">
-    <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:10px">
-      <div>
-        <div class="day-big">${day}</div>
-        <div class="day-lbl">Day of your 90-day journey</div>
+    <div style="display:grid;grid-template-columns:1fr 1px 1fr 1px 1fr;align-items:center;gap:0;text-align:center">
+      <div style="padding:8px 12px">
+        <div style="font-size:10px;color:rgba(255,255,255,0.6);letter-spacing:1.5px;text-transform:uppercase;font-weight:700;margin-bottom:6px">Day</div>
+        <div style="font-family:'Playfair Display',serif;font-size:44px;font-weight:700;color:#fff;line-height:1">${day}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.6);margin-top:4px">of 90</div>
       </div>
-      <div style="text-align:right">
-        <div style="font-family:'Playfair Display',serif;font-size:26px;font-weight:800;color:var(--warn)">${streak}🔥</div>
-        <div style="font-size:11px;color:var(--muted)">Day streak</div>
+      <div style="height:50px;background:rgba(255,255,255,0.25)"></div>
+      <div style="padding:8px 12px">
+        <div style="font-size:10px;color:rgba(255,255,255,0.6);letter-spacing:1.5px;text-transform:uppercase;font-weight:700;margin-bottom:6px">Streak</div>
+        <div style="font-size:38px;line-height:1">🔥</div>
+        <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:#fff;margin-top:2px">${streak} day${streak!==1?'s':''}</div>
+      </div>
+      <div style="height:50px;background:rgba(255,255,255,0.25)"></div>
+      <div style="padding:8px 12px">
+        <div style="font-size:10px;color:rgba(255,255,255,0.6);letter-spacing:1.5px;text-transform:uppercase;font-weight:700;margin-bottom:6px">Phase</div>
+        <div style="font-family:'Playfair Display',serif;font-size:44px;font-weight:700;color:#fff;line-height:1">${phIdx+1}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.6);margin-top:4px">${['Days 1–30','Days 31–60','Days 61–90'][phIdx]}</div>
       </div>
     </div>
   </div>
