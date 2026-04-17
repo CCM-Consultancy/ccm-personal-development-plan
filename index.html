@@ -33,7 +33,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 /* TOPBAR */
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:20px;box-shadow:var(--shadow);flex-wrap:wrap;gap:10px}
 .topbar-left{display:flex;align-items:center;gap:12px}
-.topbar-left img{height:30px;border-radius:4px}
+.topbar-left img{height:34px;width:auto;object-fit:contain}
 .topbar-title{font-size:13px;font-weight:700;color:var(--text);letter-spacing:.3px}
 .topbar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .chip{font-size:11px;color:var(--red);background:var(--red-light);padding:3px 10px;border-radius:20px;border:1px solid var(--red-border);font-weight:600;white-space:nowrap}
@@ -47,7 +47,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 /* LOGIN */
 .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 16px;background:var(--bg)}
 .login-box{width:100%;max-width:440px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px 32px;box-shadow:var(--shadow-lg)}
-.login-logo{height:52px;display:block;margin:0 auto 22px;border-radius:4px}
+.login-logo{height:60px;width:auto;display:block;margin:0 auto 22px;object-fit:contain}
 .login-title{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--text);text-align:center;margin-bottom:4px}
 .login-sub{font-size:13px;color:var(--muted);text-align:center;margin-bottom:10px;line-height:1.6}
 .login-intro{background:var(--red-light);border:1px solid var(--red-border);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:22px;font-size:12.5px;color:var(--text2);line-height:1.75}
@@ -170,7 +170,7 @@ const SUPA_URL='https://exqpnofliridwdrcyien.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV4cXBub2ZsaXJpZHdkcmN5aWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MDYwODgsImV4cCI6MjA5MTk4MjA4OH0.xVkvptHGnTDAoQ288uQiAHSct2qpREMzY-2dRdGwt8M';
 const ANTHROPIC_KEY=((document.querySelector('meta[name="ak"]')||{}).content)||'';
 var akMeta2=document.querySelector('meta[name="ac"]');var ADMIN_CODE=akMeta2?akMeta2.content:'admin2024';
-const LOGO='https://www.ccmconsultancy.com/wp-content/uploads/2019/09/cropped-CCM-Square-8-150.png';
+const LOGO='./ccm_logo_primary.png';
 
 // ── SUPABASE ─────────────────────────────────────────────
 async function dbQ(path,method,body,extraHeaders){
@@ -894,149 +894,177 @@ function adminPDF(email){
 function genPDF(u){
   var jsPDFObj=window.jspdf;
   var doc=new jsPDFObj.jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-  var W=210,M=18,y=0,lh=5.5;
+  var W=210,M=20,y=0,lh=6,RW=W-M*2;
+
+  // ── PAGE HELPERS ─────────────────────────────────────────
+  function addPageHeader(){
+    doc.setFillColor(247,245,242);
+    doc.rect(0,0,210,297,'F');
+    doc.setDrawColor(220,215,210);
+    doc.setLineWidth(0.3);
+    doc.line(M,13,W-M,13);
+    doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(160,155,150);
+    doc.text('CCM Consultancy  ·  Personal Development Plan  ·  '+safe(u.name),M,10);
+  }
 
   function newPage(){
     doc.addPage();
-    y=16;
-    // subtle header line on continuation pages
-    doc.setDrawColor(220,220,220);
-    doc.setLineWidth(0.3);
-    doc.line(M,12,W-M,12);
-    doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(180,180,180);
-    doc.text('CCM Consultancy  ·  Personal Development Plan  ·  '+u.name,M,10);
+    y=22;
+    addPageHeader();
   }
 
-  function checkY(needed){if(y+needed>278){newPage();}}
+  function checkY(needed){if(y+(needed||12)>278){newPage();}}
 
-  function txt(t,sz,bold,r,g,b){
-    doc.setFontSize(sz);
-    doc.setFont('helvetica',bold?'bold':'normal');
-    doc.setTextColor(r||30,g||30,b||30);
-    var lines=doc.splitTextToSize(String(t||''),W-M*2);
-    checkY(lines.length*lh+2);
-    lines.forEach(function(l){doc.text(l,M,y);y+=lh;});
-    y+=1;
-  }
-
-  function fieldLabel(t){
-    checkY(10);
-    doc.setFontSize(7.5);doc.setFont('helvetica','bold');
-    doc.setTextColor(80,80,80);
-    doc.text(t.toUpperCase(),M,y);
-    y+=4;
-  }
-
-  function fieldValue(t){
-    if(!t||t==='Not completed'){
-      doc.setFontSize(9);doc.setFont('helvetica','italic');doc.setTextColor(160,160,160);
-      checkY(7);doc.text('Not completed',M,y);y+=lh+1;
-    }else{
-      doc.setFontSize(9.5);doc.setFont('helvetica','normal');doc.setTextColor(40,40,40);
-      var lines=doc.splitTextToSize(t,W-M*2);
-      checkY(lines.length*lh+4);
-      lines.forEach(function(l){doc.text(l,M,y);y+=lh;});
-      y+=2;
-    }
-  }
-
-  function sectionHeader(t){
-    checkY(14);
-    y+=4;
-    doc.setFillColor(30,30,30);
-    doc.rect(M-2,y-5,W-M*2+4,8,'F');
-    doc.setFontSize(8.5);doc.setFont('helvetica','bold');doc.setTextColor(232,40,30);
+  // ── TEXT HELPERS ─────────────────────────────────────────
+  function heading1(t){
+    checkY(12);y+=4;
+    doc.setFillColor(212,35,26);
+    doc.rect(0,y-6,210,10,'F');
+    doc.setFontSize(9);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
     doc.text(t,M,y);
-    y+=6;
+    y+=8;
   }
 
-  function divider(){
-    checkY(6);
-    doc.setDrawColor(220,220,220);doc.setLineWidth(0.2);
+  function heading2(t){
+    checkY(12);y+=3;
+    doc.setFillColor(235,230,225);
+    doc.rect(M-2,y-5,RW+4,8,'F');
+    doc.setFontSize(9);doc.setFont('helvetica','bold');doc.setTextColor(212,35,26);
+    doc.text(t,M,y);
+    y+=7;
+  }
+
+  function qLabel(t){
+    checkY(8);
+    doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.setTextColor(100,95,90);
+    doc.text(t.toUpperCase(),M,y);
+    y+=5;
+  }
+
+  function qAnswer(t){
+    if(!t||!t.trim()){
+      checkY(7);
+      doc.setFontSize(9);doc.setFont('helvetica','italic');doc.setTextColor(180,175,170);
+      doc.text('Not completed',M,y);y+=lh;
+    }else{
+      doc.setFontSize(10);doc.setFont('helvetica','normal');doc.setTextColor(30,28,26);
+      var lines=doc.splitTextToSize(String(t),RW);
+      checkY(lines.length*lh+2);
+      lines.forEach(function(l){doc.text(l,M,y);y+=lh;});
+    }
+    y+=3;
+    doc.setDrawColor(230,225,220);doc.setLineWidth(0.2);
     doc.line(M,y,W-M,y);
     y+=4;
   }
 
-  // ── COVER HEADER ──
-  doc.setFillColor(20,20,20);
-  doc.rect(0,0,210,44,'F');
-  doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(232,40,30);
-  doc.text('CCM CONSULTANCY',M,14);
-  doc.setFontSize(18);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
-  doc.text('Personal Development Plan',M,26);
-  doc.setFontSize(9.5);doc.setFont('helvetica','normal');doc.setTextColor(150,200,150);
-  doc.text(u.name+'   ·   '+(u.workshop||'Workshop')+'   ·   Day '+dayNum(u.start_date)+' of 90',M,36);
-  y=54;
+  function spacer(){y+=2;}
 
-  // ── PLAN ──
+  // ── COVER PAGE ───────────────────────────────────────────
+  doc.setFillColor(20,18,16);
+  doc.rect(0,0,210,297,'F');
+  // Red accent band
+  doc.setFillColor(212,35,26);
+  doc.rect(0,100,210,6,'F');
+  // Title
+  doc.setFontSize(28);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
+  doc.text('Personal',M,80);
+  doc.text('Development Plan',M,95);
+  // Red line
+  doc.setFillColor(212,35,26);doc.rect(M,103,60,1.5,'F');
+  // Participant info
+  doc.setFontSize(12);doc.setFont('helvetica','normal');doc.setTextColor(200,195,190);
+  doc.text(safe(u.name),M,118);
+  doc.setFontSize(10);doc.setTextColor(140,135,130);
+  doc.text((u.workshop||'Workshop'),M,128);
+  // Footer
+  doc.setFontSize(8);doc.setTextColor(80,78,76);
+  doc.text('CCM CONSULTANCY',M,275);
+  doc.text('Confidential — For Participant Use Only',M,281);
+
+  // ── PAGE 2 START ─────────────────────────────────────────
+  doc.addPage();
+  doc.setFillColor(247,245,242);
+  doc.rect(0,0,210,297,'F');
+  y=24;
+
+  // ── SECTION 1: DEVELOPMENT PLAN ──────────────────────────
   var plan=u.plan||{};
-  var PLABELS=[
-    ['keylearnings','Key Learnings & Insights'],
-    ['identity','Desired Identity Shift'],
-    ['strengths','Supporting Strengths'],
-    ['gaps','Potential Gaps to Address'],
-    ['obstacles','Potential Obstacles'],
-    ['solutions','Proactive Solutions'],
-    ['tracking','Tracking Progress'],
-    ['accountability','Accountability Partner']
+  heading1('SECTION 1 — DEVELOPMENT PLAN');
+  spacer();
+
+  var planFields=[
+    ['keylearnings','Key Learnings & Insights','What are your 3 key learnings from the workshop that you want to actively integrate at work?'],
+    ['identity','Desired Identity Shift','Based on these insights, what kind of person do these learnings inspire you to become?'],
+    ['strengths','Supporting Strengths','What current skills or strengths do you already possess that can help you implement your insights?'],
+    ['gaps','Potential Gaps to Address','What new skills, behaviours, or knowledge might you need to cultivate?'],
+    ['obstacles','Potential Obstacles','What might prevent you from sticking to your plan?'],
+    ['solutions','Proactive Solutions','How will you overcome each obstacle?'],
+    ['tracking','Tracking Progress','How will you track your progress visually?'],
+    ['accountability','Accountability Partner','Who is your accountability partner and how often will you check in?']
   ];
-  sectionHeader('DEVELOPMENT PLAN');
-  PLABELS.forEach(function(pair){
-    fieldLabel(pair[1]);
-    fieldValue(plan[pair[0]]);
-    divider();
+
+  planFields.forEach(function(f){
+    qLabel(f[1]);
+    qAnswer(plan[f[0]]);
   });
 
-  // ── HABITS ──
+  // ── SECTION 2: HABITS ────────────────────────────────────
   var h=u.habits||[];
   if(h.length){
-    sectionHeader('HABITS — ATOMIC HABITS FRAMEWORK');
-    var LAWS=['Make it Obvious (Cue)','Make it Attractive (Craving)','Make it Easy (Response)','Make it Satisfying (Reward)'];
+    spacer();
+    heading1('SECTION 2 — ATOMIC HABITS');
+    spacer();
+    var LAWS=[
+      ['Cue','Make it Obvious — What specific cue will prompt this habit?'],
+      ['Craving','Make it Attractive — How will you increase your motivation to do it?'],
+      ['Response','Make it Easy — How will you reduce friction and simplify the action?'],
+      ['Reward','Make it Satisfying — What immediate reward will reinforce this habit?']
+    ];
     h.forEach(function(hb,i){
-      checkY(12);
-      doc.setFontSize(10.5);doc.setFont('helvetica','bold');doc.setTextColor(10,26,12);
-      doc.setFillColor(245,235,235);
-      doc.rect(M-2,y-5,W-M*2+4,8,'F');
-      doc.text('Action '+(i+1)+': '+(hb.name||''),M,y);
-      y+=7;
+      heading2('Action '+(i+1)+': '+(safe(hb.name)||''));
       LAWS.forEach(function(law,li){
-        fieldLabel(law);
-        fieldValue(hb.laws&&hb.laws[li]?hb.laws[li]:'');
+        qLabel(law[1]);
+        qAnswer(hb.laws&&hb.laws[li]?hb.laws[li]:'');
       });
-      if(i<h.length-1)divider();
+      spacer();
     });
   }
 
-  // ── REFLECTIONS ──
+  // ── SECTION 3: REFLECTIONS (only if any completed) ───────
   var ref=u.reflections||{};
   var hasRef=false;
   for(var rk in ref){if(ref[rk]){hasRef=true;break;}}
   if(hasRef){
-    sectionHeader('PHASE REFLECTIONS');
-    var phaseNames=['Phase 1 — 30-Day Check-in','Phase 2 — 60-Day Check-in','Phase 3 — 90-Day Check-in'];
+    spacer();
+    heading1('SECTION 3 — PHASE REFLECTIONS');
+    spacer();
+    var phLabels=['Phase 1 — 30-Day Reflection','Phase 2 — 60-Day Reflection','Phase 3 — 90-Day Reflection'];
     [0,1,2].forEach(function(pi){
       if(ref[pi]){
-        checkY(10);
-        doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(30,80,30);
-        doc.text(phaseNames[pi],M,y);y+=7;
+        heading2(phLabels[pi]);
         h.forEach(function(hb,hi){
-          fieldLabel('Action '+(hi+1)+': '+hb.name);
-          fieldValue(ref[pi]['h'+hi+'_ref']);
+          qLabel('Action '+(hi+1)+': '+safe(hb.name));
+          qAnswer(ref[pi]['h'+hi+'_ref']);
         });
-        fieldLabel("What's Next");
-        fieldValue(ref[pi].next);
-        if(pi<2)divider();
+        qLabel("What's Next / Going Forward");
+        qAnswer(ref[pi].next);
+        spacer();
       }
     });
   }
 
-  // ── AI REPORT ──
+  // ── AI REPORT (if generated) ─────────────────────────────
   if(S.aiReport){
-    sectionHeader('AI COACHING REPORT');
-    fieldValue(S.aiReport);
+    spacer();
+    heading1('AI COACHING REPORT');
+    spacer();
+    doc.setFontSize(10);doc.setFont('helvetica','normal');doc.setTextColor(30,28,26);
+    var rlines=doc.splitTextToSize(String(S.aiReport),RW);
+    rlines.forEach(function(l){checkY(lh+1);doc.text(l,M,y);y+=lh;});
   }
 
-  doc.save('PDP-'+u.name.replace(/\s+/g,'-')+'.pdf');
+  doc.save('PDP-'+safe(u.name).replace(/\s+/g,'-')+'.pdf');
   toast('✓ PDF downloaded!');
 }
 
