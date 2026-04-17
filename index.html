@@ -220,10 +220,17 @@ function pc(p){return p>=70?'phi':p>=40?'pmd':'plo';}
 
 // ── RENDER ───────────────────────────────────────────────
 function render(){
-  document.getElementById('app').innerHTML=
-    S.screen==='login'?rLogin():
-    S.screen==='participant'?rPart():
-    rAdmin();
+  const app=document.getElementById('app');
+  if(!app)return;
+  try{
+    app.innerHTML=
+      S.screen==='login'?rLogin():
+      S.screen==='participant'?rPart():
+      rAdmin();
+  }catch(e){
+    app.innerHTML=`<div style="padding:30px;color:#f87;font-size:12px;font-family:monospace">Render error: ${e.message}</div>`;
+    console.error(e);
+  }
 }
 
 // ── LOGIN ────────────────────────────────────────────────
@@ -911,7 +918,10 @@ async function exportCSV(){
   toast('✓ CSV exported!');
 }
 
-render();
+try{render();}catch(e){
+  document.getElementById('app').innerHTML=`<div style="padding:40px;font-family:sans-serif;color:#fff;background:#0a1a0c;min-height:100vh"><h2 style="color:#C8F400">Loading error</h2><pre style="font-size:12px;color:#f87;margin-top:12px;white-space:pre-wrap">${e.message}\n${e.stack}</pre></div>`;
+  console.error('Render error:',e);
+}
 </script>
 </body>
 </html>
