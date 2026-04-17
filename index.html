@@ -170,7 +170,7 @@ const SUPA_URL='https://exqpnofliridwdrcyien.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV4cXBub2ZsaXJpZHdkcmN5aWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MDYwODgsImV4cCI6MjA5MTk4MjA4OH0.xVkvptHGnTDAoQ288uQiAHSct2qpREMzY-2dRdGwt8M';
 const ANTHROPIC_KEY=((document.querySelector('meta[name="ak"]')||{}).content)||'';
 var akMeta2=document.querySelector('meta[name="ac"]');var ADMIN_CODE=akMeta2?akMeta2.content:'admin2024';
-const LOGO='./ccm_logo_primary.png';
+const LOGO='./ccm_logo_rgb.png';
 
 // ── SUPABASE ─────────────────────────────────────────────
 async function dbQ(path,method,body,extraHeaders){
@@ -190,16 +190,15 @@ async function getUser(email){
   return d&&d.length?d[0]:null;
 }
 async function saveUser(u){
-  var exists=await getUser(u.email);
   u.updated_at=new Date().toISOString();
+  if(!u.created_at)u.created_at=new Date().toISOString();
   var body=JSON.stringify(u);
-  if(exists){
-    await dbQ('pdp_users?email=eq.'+encodeURIComponent(u.email),'PATCH',body,{'Prefer':'return=minimal'});
-  }else{
-    u.created_at=new Date().toISOString();
-    body=JSON.stringify(u);
-    await dbQ('pdp_users','POST',body,{'Prefer':'return=representation'});
-  }
+  // Use upsert — single call, handles both insert and update
+  var result=await dbQ('pdp_users','POST',body,{
+    'Prefer':'return=representation,resolution=merge-duplicates',
+    'on_conflict':'email'
+  });
+  return result;
 }
 async function getAllUsers(){
   var d=await dbQ('pdp_users?select=*&order=created_at.desc','GET',null,null);
@@ -263,7 +262,8 @@ function rLogin(){
   const isP=S.loginMode==='p';
   return`<div class="login-wrap">
   <div class="login-box">
-    <img src="${LOGO}" class="login-logo">
+    <img src="${LOGO}" class="login-logo" alt="CCM Consultancy" onerror="this.style.display='none';document.getElementById('logo-fallback').style.display='block'">
+    <div id="logo-fallback" style="display:none;text-align:center;margin-bottom:20px;font-size:26px;font-weight:800;color:var(--red);letter-spacing:-1px;font-family:'Playfair Display',serif">CCM</div>
     <div class="login-title">Personal Development Plan</div>
 
     ${isP?`<div class="login-intro">
@@ -367,7 +367,7 @@ function rPart(){
   return`
   <div class="topbar">
     <div class="topbar-left">
-      <img src="${LOGO}">
+      <img src="${LOGO}" alt="CCM" onerror="this.outerHTML='<span style=\"font-size:18px;font-weight:800;color:var(--red);font-family:\\'Playfair Display\\',serif\">CCM</span>'">
 
     </div>
     <div class="topbar-right">
@@ -498,32 +498,37 @@ function rPlan(){
 async function savePlan(){
   if(S.saving)return;
   set({saving:true});
-  const u=S.ud;
-  const plan={
+  var u=S.ud;
+  var plan={
     keylearnings:v('p-keylearnings'),identity:v('p-identity'),
     strengths:v('p-strengths'),gaps:v('p-gaps'),
     obstacles:v('p-obstacles'),solutions:v('p-solutions'),
     tracking:v('p-tracking'),accountability:v('p-accountability')
   };
-  const habits=[];
-  [0,1,2].forEach(i=>{
-    const name=v(`h${i}-name`);
-    if(name){
-      habits.push({name,laws:[v(`h${i}-cue`),v(`h${i}-craving`),v(`h${i}-response`),v(`h${i}-reward`)]});
+  var habits=[];
+  var i;
+  for(i=0;i<3;i++){
+    var hname=v('h'+i+'-name');
+    if(hname){
+      habits.push({
+        name:hname,
+        laws:[v('h'+i+'-cue'),v('h'+i+'-craving'),v('h'+i+'-response'),v('h'+i+'-reward')]
+      });
     }
-  });
-  u.plan=plan;u.habits=habits;
-  var saveOk=await saveUser(u);
+  }
+  u.plan=plan;
+  u.habits=habits;
   S.ud=u;
+  var saveOk=await saveUser(u);
   set({saving:false});
-  if(saveOk===null){
-    toast('❌ Save failed — please check your connection and try again.');
+  if(!saveOk){
+    toast('❌ Save failed. Check your connection and try again.');
   }else{
     toast('✓ Plan saved successfully!');
   }
 }
 
-function v(id){const el=document.getElementById(id);return el?el.value.trim():'';}
+function v(id){var el=document.getElementById(id);return el?(el.value||'').trim():'';}
 
 // STEP 2 — HABITS
 function rHabits(){
@@ -710,7 +715,7 @@ function rAdmin(){
   return`
   <div class="topbar">
     <div class="topbar-left">
-      <img src="${LOGO}">
+      <img src="${LOGO}" alt="CCM" onerror="this.outerHTML='<span style=\"font-size:18px;font-weight:800;color:var(--red);font-family:\\'Playfair Display\\',serif\">CCM</span>'">
 
     </div>
     <div class="topbar-right">
@@ -897,20 +902,14 @@ function genPDF(u){
   var W=210,M=20,y=0,lh=6,RW=W-M*2;
 
   // ── PAGE HELPERS ─────────────────────────────────────────
-  function addPageHeader(){
-    doc.setFillColor(247,245,242);
-    doc.rect(0,0,210,297,'F');
-    doc.setDrawColor(220,215,210);
-    doc.setLineWidth(0.3);
-    doc.line(M,13,W-M,13);
-    doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(160,155,150);
-    doc.text('CCM Consultancy  ·  Personal Development Plan  ·  '+safe(u.name),M,10);
-  }
-
   function newPage(){
     doc.addPage();
-    y=22;
-    addPageHeader();
+    doc.setFillColor(247,245,242);
+    doc.rect(0,0,210,297,'F');
+    doc.setFillColor(212,35,26);doc.rect(0,0,210,8,'F');
+    doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(255,255,255);
+    doc.text('CCM Consultancy  ·  Personal Development Plan  ·  '+safe(u.name),M,5.5);
+    y=18;
   }
 
   function checkY(needed){if(y+(needed||12)>278){newPage();}}
@@ -960,33 +959,25 @@ function genPDF(u){
 
   function spacer(){y+=2;}
 
-  // ── COVER PAGE ───────────────────────────────────────────
-  doc.setFillColor(20,18,16);
-  doc.rect(0,0,210,297,'F');
-  // Red accent band
-  doc.setFillColor(212,35,26);
-  doc.rect(0,100,210,6,'F');
-  // Title
-  doc.setFontSize(28);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
-  doc.text('Personal',M,80);
-  doc.text('Development Plan',M,95);
-  // Red line
-  doc.setFillColor(212,35,26);doc.rect(M,103,60,1.5,'F');
-  // Participant info
-  doc.setFontSize(12);doc.setFont('helvetica','normal');doc.setTextColor(200,195,190);
-  doc.text(safe(u.name),M,118);
-  doc.setFontSize(10);doc.setTextColor(140,135,130);
-  doc.text((u.workshop||'Workshop'),M,128);
-  // Footer
-  doc.setFontSize(8);doc.setTextColor(80,78,76);
-  doc.text('CCM CONSULTANCY',M,275);
-  doc.text('Confidential — For Participant Use Only',M,281);
-
-  // ── PAGE 2 START ─────────────────────────────────────────
-  doc.addPage();
+  // ── PAGE 1 START — no cover ─────────────────────────────
   doc.setFillColor(247,245,242);
   doc.rect(0,0,210,297,'F');
-  y=24;
+  // Header banner
+  doc.setFillColor(212,35,26);
+  doc.rect(0,0,210,18,'F');
+  doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
+  doc.text('CCM CONSULTANCY',M,7);
+  doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(255,200,198);
+  doc.text('Personal Development Plan  ·  Confidential',M,13);
+  // Participant line
+  y=26;
+  doc.setFontSize(16);doc.setFont('helvetica','bold');doc.setTextColor(20,18,16);
+  doc.text(safe(u.name),M,y);y+=8;
+  doc.setFontSize(10);doc.setFont('helvetica','normal');doc.setTextColor(120,115,110);
+  doc.text((u.workshop||'Workshop'),M,y);y+=10;
+  doc.setDrawColor(212,35,26);doc.setLineWidth(0.5);
+  doc.line(M,y,W-M,y);
+  y+=8;
 
   // ── SECTION 1: DEVELOPMENT PLAN ──────────────────────────
   var plan=u.plan||{};
