@@ -180,10 +180,20 @@ async function dbQ(path,method,body,extraHeaders){
   if(body){opts.body=body;}
   try{
     var r=await fetch(SUPA_URL+'/rest/v1/'+path,opts);
-    if(!r.ok){var t=await r.text();console.error('DB',r.status,t);return null;}
+    if(!r.ok){
+      var t=await r.text();
+      console.error('DB ERROR',r.status,path,t);
+      return null;
+    }
+    // 204 No Content = success with no body (PATCH returns this)
+    if(r.status===204)return true;
     var ct=r.headers.get('content-type')||'';
-    return ct.indexOf('json')>-1?await r.json():true;
-  }catch(e){console.error(e);return null;}
+    if(ct.indexOf('json')>-1){
+      var d=await r.json();
+      return d;
+    }
+    return true;
+  }catch(e){console.error('DB FETCH ERROR',e);return null;}
 }
 async function getUser(email){
   var d=await dbQ('pdp_users?email=eq.'+encodeURIComponent(email)+'&limit=1','GET',null,null);
@@ -193,12 +203,22 @@ async function saveUser(u){
   u.updated_at=new Date().toISOString();
   if(!u.created_at)u.created_at=new Date().toISOString();
   var body=JSON.stringify(u);
-  var result=await dbQ(
-    'pdp_users?on_conflict=email',
-    'POST',body,
-    {'Prefer':'return=representation,resolution=merge-duplicates'}
-  );
-  return result;
+  var existing=await getUser(u.email);
+  var result;
+  if(existing){
+    // Update existing record with PATCH
+    result=await dbQ(
+      'pdp_users?email=eq.'+encodeURIComponent(u.email),
+      'PATCH',body,
+      {'Prefer':'return=minimal'}
+    );
+    // PATCH returns empty 204 on success — check not null
+    return result!==null?true:null;
+  }else{
+    // Create new record with POST
+    result=await dbQ('pdp_users','POST',body,{'Prefer':'return=representation'});
+    return result;
+  }
 }
 async function getAllUsers(){
   var d=await dbQ('pdp_users?select=*&order=created_at.desc','GET',null,null);
@@ -207,7 +227,7 @@ async function getAllUsers(){
 
 // ── STATE ────────────────────────────────────────────────
 let S={
-  screen:'login',loginMode:'p',loginStep:'email',
+  screen:'login',loginMode:'p',loginStep:'email',draft:{},
   prefillEmail:'',prefillName:'',prefillWs:'',
   user:null,ud:null,
   step:0,adminTab:'list',adminUsers:[],
@@ -262,7 +282,7 @@ function rLogin(){
   const isP=S.loginMode==='p';
   return`<div class="login-wrap">
   <div class="login-box">
-    <img src="${LOGO}" class="login-logo" alt="CCM Consultancy" onerror="this.style.display='none';document.getElementById('logo-fallback').style.display='block'">
+    <img src="${LOGO}" alt="CCM" style="height:34px;width:auto;object-fit:contain;border-radius:3px">
     <div id="logo-fallback" style="display:none;text-align:center;margin-bottom:20px;font-size:26px;font-weight:800;color:var(--red);letter-spacing:-1px;font-family:'Playfair Display',serif">CCM</div>
     <div class="login-title">Personal Development Plan</div>
 
@@ -367,7 +387,7 @@ function rPart(){
   return`
   <div class="topbar">
     <div class="topbar-left">
-      <img src="${LOGO}" alt="CCM" onerror="this.outerHTML='<span style=\"font-size:18px;font-weight:800;color:var(--red);font-family:\\'Playfair Display\\',serif\">CCM</span>'">
+      <img src="${LOGO}" alt="CCM" style="height:34px;width:auto;object-fit:contain;border-radius:3px">CCM</span>'">
 
     </div>
     <div class="topbar-right">
@@ -416,46 +436,46 @@ function rPlan(){
     <div class="sdiv">Key Learnings & Insights</div>
     <div class="fgroup">
       <label class="flabel">What are 3 key learnings, concepts, skills, or ideas from the workshop that resonated most strongly and that you want to actively integrate at work?</label>
-      <textarea class="inp" id="p-keylearnings" rows="4" placeholder="Write your 3 key learnings here...">${p.keylearnings||''}</textarea>
+      <textarea class="inp" id="p-keylearnings" oninput="S.draft['keylearnings']=this.value" rows="4" placeholder="Write your 3 key learnings here...">${p.keylearnings||''}</textarea>
       <div class="fexample">e.g. "I learned that authentic leadership starts with self-awareness. I realised I often avoid difficult conversations, which holds my team back. I want to practise being more direct while staying empathetic."</div>
     </div>
     <div class="sdiv">Desired Identity Shift</div>
     <div class="fgroup">
       <label class="flabel">Based on these insights, what kind of person do these learnings inspire you to become? Focus on the identity you want to embody.</label>
-      <textarea class="inp" id="p-identity" rows="3" placeholder="I am the type of person who...">${p.identity||''}</textarea>
+      <textarea class="inp" id="p-identity" oninput="S.draft['identity']=this.value" rows="3" placeholder="I am the type of person who...">${p.identity||''}</textarea>
       <div class="fexample">e.g. "I am the type of person who leads with clarity and confidence, gives honest feedback with care, and creates a team environment where people feel safe to speak up."</div>
     </div>
     <div class="sdiv">Supporting Strengths & Potential Gaps</div>
     <div class="fgroup">
       <label class="flabel">What current skills, habits, or strengths do you already possess that align with this desired identity and can help you implement your insights?</label>
-      <textarea class="inp" id="p-strengths" rows="3" placeholder="My supporting strengths...">${p.strengths||''}</textarea>
+      <textarea class="inp" id="p-strengths" oninput="S.draft['strengths']=this.value" rows="3" placeholder="My supporting strengths...">${p.strengths||''}</textarea>
       <div class="fexample">e.g. "I am a good listener and I genuinely care about my team's wellbeing. I am consistent and follow through on commitments. I have experience facilitating team meetings."</div>
     </div>
     <div class="fgroup">
       <label class="flabel">What potential new skills, behaviours, or knowledge might you need to cultivate to fully embody this identity?</label>
-      <textarea class="inp" id="p-gaps" rows="3" placeholder="Potential gaps to address...">${p.gaps||''}</textarea>
+      <textarea class="inp" id="p-gaps" oninput="S.draft['gaps']=this.value" rows="3" placeholder="Potential gaps to address...">${p.gaps||''}</textarea>
       <div class="fexample">e.g. "I need to get more comfortable with giving constructive feedback in the moment. I tend to delay difficult conversations, so I need to build more courage and practical frameworks for this."</div>
     </div>
     <div class="sdiv">Overcoming Obstacles & Staying Consistent</div>
     <div class="fgroup">
       <label class="flabel">What potential obstacles might prevent you from sticking to your plan? (e.g. lack of time, forgetting, losing motivation)</label>
-      <textarea class="inp" id="p-obstacles" rows="3" placeholder="Potential obstacles...">${p.obstacles||''}</textarea>
+      <textarea class="inp" id="p-obstacles" oninput="S.draft['obstacles']=this.value" rows="3" placeholder="Potential obstacles...">${p.obstacles||''}</textarea>
       <div class="fexample">e.g. "My biggest obstacle is time — my schedule is unpredictable and I often skip reflection when things get busy. I also tend to lose motivation when I don't see immediate results."</div>
     </div>
     <div class="fgroup">
       <label class="flabel">Proactive solutions — how will you overcome each obstacle?</label>
-      <textarea class="inp" id="p-solutions" rows="3" placeholder="My proactive solutions...">${p.solutions||''}</textarea>
+      <textarea class="inp" id="p-solutions" oninput="S.draft['solutions']=this.value" rows="3" placeholder="My proactive solutions...">${p.solutions||''}</textarea>
       <div class="fexample">e.g. "I will block 10 minutes every Monday morning for reflection. I will set a phone reminder at 8am daily. I will tell my accountability partner if I miss a week so they can check in."</div>
     </div>
     <div class="sdiv">Tracking & Accountability</div>
     <div class="fgroup">
       <label class="flabel">How will you track your progress visually?</label>
-      <input class="inp" id="p-tracking" placeholder="How you will track progress..." value="${p.tracking||''}">
+      <input class="inp" id="p-tracking" oninput="S.draft['tracking']=this.value" placeholder="How you will track progress..." value="${p.tracking||''}">
       <div class="fexample">e.g. "I will use this app daily to check in on my habits. I will also keep a sticky note on my desk with my top habit."</div>
     </div>
     <div class="fgroup">
       <label class="flabel">Who can be your accountability partner? When and how often will you check in?</label>
-      <input class="inp" id="p-accountability" placeholder="Your accountability partner and check-in schedule..." value="${p.accountability||''}">
+      <input class="inp" id="p-accountability" oninput="S.draft['accountability']=this.value" placeholder="Your accountability partner and check-in schedule..." value="${p.accountability||''}">
       <div class="fexample">e.g. "My colleague Sara will be my accountability partner. We will check in every two weeks over coffee and share our habit progress honestly."</div>
     </div>
     <div class="sdiv">Designing Your Atomic Habits (Up to 3 Actions)</div>
@@ -497,40 +517,56 @@ function rPlan(){
 
 async function savePlan(){
   if(S.saving)return;
-  set({saving:true});
-  var u=S.ud;
-  var plan={
-    keylearnings:v('p-keylearnings'),identity:v('p-identity'),
-    strengths:v('p-strengths'),gaps:v('p-gaps'),
-    obstacles:v('p-obstacles'),solutions:v('p-solutions'),
-    tracking:v('p-tracking'),accountability:v('p-accountability')
-  };
+  // Collect all values directly from DOM
+  var draft=S.draft||{};
+  var fieldKeys=['keylearnings','identity','strengths','gaps','obstacles','solutions','tracking','accountability'];
+  var plan={};
+  fieldKeys.forEach(function(key){
+    var el=document.getElementById('p-'+key);
+    var fromDom=el?el.value:'';
+    var fromDraft=draft[key]||'';
+    var val=fromDom.length>0?fromDom:fromDraft;
+    plan[key]=val;
+    console.log('Field '+key+': '+val.substring(0,30));
+  });
+  S.draft={};
   var habits=[];
-  var i;
-  for(i=0;i<3;i++){
-    var hname=v('h'+i+'-name');
+  for(var i=0;i<3;i++){
+    var nel=document.getElementById('h'+i+'-name');
+    var hname=nel?nel.value.trim():'';
     if(hname){
+      var cue=document.getElementById('h'+i+'-cue');
+      var craving=document.getElementById('h'+i+'-craving');
+      var response=document.getElementById('h'+i+'-response');
+      var reward=document.getElementById('h'+i+'-reward');
       habits.push({
         name:hname,
-        laws:[v('h'+i+'-cue'),v('h'+i+'-craving'),v('h'+i+'-response'),v('h'+i+'-reward')]
+        laws:[
+          cue?cue.value.trim():'',
+          craving?craving.value.trim():'',
+          response?response.value.trim():'',
+          reward?reward.value.trim():''
+        ]
       });
     }
   }
+  console.log('Plan keys:',Object.keys(plan).length,'Habits:',habits.length);
+  S.saving=true;
+  var u=S.ud;
   u.plan=plan;
   u.habits=habits;
   S.ud=u;
-  console.log('Saving user:', u.email, 'habits:', habits.length, 'plan keys:', Object.keys(plan).length);
   var saveOk=await saveUser(u);
-  console.log('Save result:', saveOk);
-  set({saving:false});
+  S.saving=false;
+  render();
   if(!saveOk){
-    toast('❌ Save failed — check browser console for error details.');
+    toast('❌ Save failed. Please try again.');
   }else{
-    toast('✓ Plan saved! ' + habits.length + ' habit(s) recorded.');
+    toast('✓ Saved — '+habits.length+' action(s) recorded.');
   }
 }
 
-function v(id){var el=document.getElementById(id);return el?(el.value||'').trim():'';}
+function v(id){try{var el=document.getElementById(id);return el&&el.value?String(el.value).trim():'';}catch(e){return '';}}
 
 // STEP 2 — HABITS
 function rHabits(){
@@ -726,7 +762,7 @@ function rAdmin(){
   return`
   <div class="topbar">
     <div class="topbar-left">
-      <img src="${LOGO}" alt="CCM" onerror="this.outerHTML='<span style=\"font-size:18px;font-weight:800;color:var(--red);font-family:\\'Playfair Display\\',serif\">CCM</span>'">
+      <img src="${LOGO}" alt="CCM" style="height:34px;width:auto;object-fit:contain;border-radius:3px">CCM</span>'">
 
     </div>
     <div class="topbar-right">
@@ -1013,16 +1049,19 @@ function genPDF(u){
 
   // ── SECTION 2: HABITS ────────────────────────────────────
   var h=u.habits||[];
-  if(h.length){
-    spacer();
-    heading1('SECTION 2 — ATOMIC HABITS');
-    spacer();
-    var LAWS=[
-      ['Cue','Make it Obvious — What specific cue will prompt this habit?'],
-      ['Craving','Make it Attractive — How will you increase your motivation to do it?'],
-      ['Response','Make it Easy — How will you reduce friction and simplify the action?'],
-      ['Reward','Make it Satisfying — What immediate reward will reinforce this habit?']
-    ];
+  spacer();
+  heading1('SECTION 2 — ATOMIC HABITS');
+  spacer();
+  var LAWS=[
+    ['Cue','Make it Obvious — What specific cue will prompt this habit?'],
+    ['Craving','Make it Attractive — How will you increase your motivation to do it?'],
+    ['Response','Make it Easy — How will you reduce friction and simplify the action?'],
+    ['Reward','Make it Satisfying — What immediate reward will reinforce this habit?']
+  ];
+  if(!h.length){
+    qLabel('Actions');
+    qAnswer('No actions saved yet. Complete the My Plan section and save.');
+  }else{
     h.forEach(function(hb,i){
       heading2('Action '+(i+1)+': '+(safe(hb.name)||''));
       LAWS.forEach(function(law,li){
