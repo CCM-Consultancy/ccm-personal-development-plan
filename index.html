@@ -150,7 +150,7 @@ textarea.inp{resize:vertical;min-height:80px;line-height:1.6}
 <script>
 const SUPA_URL='https://exqpnofliridwdrcyien.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV4cXBub2ZsaXJpZHdkcmN5aWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MDYwODgsImV4cCI6MjA5MTk4MjA4OH0.xVkvptHGnTDAoQ288uQiAHSct2qpREMzY-2dRdGwt8M';
-const ANTHROPIC_KEY=document.querySelector('meta[name="ak"]')?.content||'';
+const ANTHROPIC_KEY=((document.querySelector('meta[name="ak"]')||{}).content)||'';
 const ADMIN_CODE='admin2024';
 const LOGO='https://www.ccmconsultancy.com/wp-content/uploads/2019/09/cropped-CCM-Square-8-150.png';
 
@@ -806,7 +806,7 @@ Be specific, encouraging, and reference actual data and their own words where po
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
     });
     const data=await res.json();
-    const report=data.content?.[0]?.text||'Report generation failed.';
+    const report=(data.content&&data.content[0]&&data.content[0].text)||'Report generation failed.';
     set({aiLoading:false,aiReport:report});
   }catch(e){set({aiLoading:false,aiReport:'Error generating report.'});}
 }
@@ -907,8 +907,8 @@ async function exportCSV(){
       u.name,u.email,u.workshop||'',dayNum(u.start_date),
       p.keylearnings||'',p.identity||'',p.strengths||'',p.gaps||'',
       p.obstacles||'',p.solutions||'',p.tracking||'',p.accountability||'',
-      ...[0,1,2].flatMap(i=>[h[i]?.name||'',...LAWS.map((_,li)=>h[i]?.laws?.[li]||'')]),
-      ...[0,1,2].map(pi=>ref[pi]?.next||'')
+      ...[0,1,2].flatMap(i=>[(h[i]&&h[i].name)||'',...LAWS.map((_,li)=>(h[i]&&h[i].laws&&h[i].laws[li])||'')]),
+      ...[0,1,2].map(pi=>(ref[pi]&&ref[pi].next)||'')
     ].map(x=>'"'+String(x).replace(/"/g,'""')+'"');
   });
   const csv=[hdrs.map(h=>'"'+h+'"').join(','),...rows.map(r=>r.join(','))].join('\n');
