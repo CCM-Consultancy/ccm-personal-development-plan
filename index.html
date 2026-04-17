@@ -700,11 +700,18 @@ function rRef(){
     {label:'Phase 2: 60-Day Check-in',sub:'Building Momentum',unlock:60},
     {label:'Phase 3: 90-Day Check-in',sub:'Sustaining Growth',unlock:90}
   ];
+  const isPreview=S.previewReflections||false;
   return`<div class="card">
     <div class="card-title">💬 Phase Reflections</div>
     <p style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.6">Reflections unlock at the end of each phase. Your habit names are carried over automatically — just reflect on your progress.</p>
+    ${day<30?`<div style="margin-bottom:14px;padding:10px 14px;background:var(--red-light);border:1px solid var(--red-border);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <span style="font-size:12px;color:var(--text2)">You are on Day ${day}. Reflections unlock at Day 30, 60, and 90.</span>
+      <button onclick="set({previewReflections:!S.previewReflections})" style="font-size:11px;font-weight:700;padding:4px 12px;border-radius:6px;border:1px solid var(--red);background:${isPreview?'var(--red)':'transparent'};color:${isPreview?'#fff':'var(--red)'};cursor:pointer">
+        ${isPreview?'Exit Preview':'Preview Reflections'}
+      </button>
+    </div>`:''}
     ${phases.map((ph,pi)=>{
-      const isOpen=day>=ph.unlock;
+      const isOpen=isPreview||day>=ph.unlock;
       const isDone=ref[pi]&&h.every((_,hi)=>ref[pi][`h${hi}_ref`]);
       return`<div class="ref-block ${isOpen?'open':''} ${isDone?'done':''}">
         <div class="ref-header">
@@ -1109,26 +1116,74 @@ function genPDF(u){
 }
 
 // ── CSV ──────────────────────────────────────────────────
+function calcLongestStreak(ud){
+  var h=ud.habits||[];if(!h.length)return 0;
+  var ci=ud.checkins||{};
+  var day=dayNum(ud.start_date);
+  var longest=0;var current=0;
+  for(var d=1;d<=day;d++){
+    var allDone=h.every(function(_,i){return ci[d]&&ci[d][i];});
+    if(allDone){current++;if(current>longest)longest=current;}
+    else{current=0;}
+  }
+  return longest;
+}
+function calcTotalCheckins(ud){
+  var h=ud.habits||[];if(!h.length)return 0;
+  var ci=ud.checkins||{};
+  var count=0;
+  Object.keys(ci).forEach(function(d){
+    if(h.every(function(_,i){return ci[d]&&ci[d][i];}))count++;
+  });
+  return count;
+}
 async function exportCSV(){
   const users=S.adminUsers||[];
   if(!users.length){toast('No data');return;}
-  const LAWS=['Cue','Craving','Response','Reward'];
-  const hdrs=['Name','Email','Workshop','Day',
-    'Key Learnings','Identity Shift','Strengths','Gaps','Obstacles','Solutions','Tracking','Accountability',
-    ...[0,1,2].flatMap(i=>[`Habit${i+1}`,...LAWS.map(l=>`Habit${i+1} ${l}`)]),
-    ...[0,1,2].flatMap(pi=>[`Phase${pi+1} Next`])
+  const LAWS=['Make it Obvious (Cue)','Make it Attractive (Craving)','Make it Easy (Response)','Make it Satisfying (Reward)'];
+  const REF_QS=['Habit 1 Reflection','Habit 2 Reflection','Habit 3 Reflection','What\'s Next'];
+  const hdrs=[
+    'Name','Email','Workshop','Start Date','Current Day',
+    'Total Days Checked In','Longest Streak (days)',
+    'Key Learnings & Insights','Desired Identity Shift',
+    'Supporting Strengths','Potential Gaps',
+    'Obstacles','Proactive Solutions',
+    'Tracking Progress','Accountability Partner',
+    'Action 1 Name','Action 1 Cue','Action 1 Craving','Action 1 Response','Action 1 Reward',
+    'Action 2 Name','Action 2 Cue','Action 2 Craving','Action 2 Response','Action 2 Reward',
+    'Action 3 Name','Action 3 Cue','Action 3 Craving','Action 3 Response','Action 3 Reward',
+    'Phase 1 (30-Day) — Action 1 Reflection','Phase 1 (30-Day) — Action 2 Reflection',
+    'Phase 1 (30-Day) — Action 3 Reflection','Phase 1 (30-Day) — What\'s Next',
+    'Phase 2 (60-Day) — Action 1 Reflection','Phase 2 (60-Day) — Action 2 Reflection',
+    'Phase 2 (60-Day) — Action 3 Reflection','Phase 2 (60-Day) — What\'s Next',
+    'Phase 3 (90-Day) — Action 1 Reflection','Phase 3 (90-Day) — Action 2 Reflection',
+    'Phase 3 (90-Day) — Action 3 Reflection','Phase 3 (90-Day) — What\'s Next'
   ];
-  const rows=users.map(u=>{
+  const rows=users.map(function(u){
     const p=u.plan||{};const h=u.habits||[];const ref=u.reflections||{};
-    return[
-      u.name,u.email,u.workshop||'',dayNum(u.start_date),
+    const totalDays=calcTotalCheckins(u);
+    const streak=calcLongestStreak(u);
+    var row=[
+      u.name,u.email,u.workshop||'',u.start_date||'',dayNum(u.start_date),
+      totalDays,streak,
       p.keylearnings||'',p.identity||'',p.strengths||'',p.gaps||'',
-      p.obstacles||'',p.solutions||'',p.tracking||'',p.accountability||'',
-      ...[0,1,2].flatMap(i=>[(h[i]&&h[i].name)||'',...LAWS.map((_,li)=>(h[i]&&h[i].laws&&h[i].laws[li])||'')]),
-      ...[0,1,2].map(pi=>(ref[pi]&&ref[pi].next)||'')
-    ].map(x=>'"'+String(x).replace(/"/g,'""')+'"');
+      p.obstacles||'',p.solutions||'',p.tracking||'',p.accountability||''
+    ];
+    // Actions 1-3
+    [0,1,2].forEach(function(i){
+      row.push((h[i]&&h[i].name)||'');
+      [0,1,2,3].forEach(function(li){row.push((h[i]&&h[i].laws&&h[i].laws[li])||'');});
+    });
+    // Phase reflections 1-3
+    [0,1,2].forEach(function(pi){
+      [0,1,2].forEach(function(hi){
+        row.push((ref[pi]&&ref[pi]['h'+hi+'_ref'])||'');
+      });
+      row.push((ref[pi]&&ref[pi].next)||'');
+    });
+    return row.map(function(x){return '"'+String(x).replace(/"/g,'""')+'"';});
   });
-  const csv=[hdrs.map(h=>'"'+h+'"').join(','),...rows.map(r=>r.join(','))].join('\n');
+  const csv=[hdrs.map(function(h){return '"'+h+'"';}).join(','),...rows.map(function(r){return r.join(',');})].join('\n');
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
   a.download='pdp-export.csv';a.click();
