@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Personal Development Plan – CCM Consultancy</title>
+<meta name="ak" content="ANTHROPIC_KEY_PLACEHOLDER">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --lime:#C8F400;--dark:#0A1A0C;--mid:#132016;--card:#0F1E12;
+  --border:rgba(200,244,0,0.12);--text:#E8F5E0;--muted:#6A8A6E;
+  --accent:#4DFFA0;--danger:#FF6B4A;--warn:#FFD166;--info:#60C8FF;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--dark);color:var(--text);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 15% 10%,rgba(200,244,0,0.05) 0%,transparent 55%),radial-gradient(ellipse at 85% 85%,rgba(77,255,160,0.04) 0%,transparent 50%);pointer-events:none;z-index:0}
+#app{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:20px 16px 60px}
+
+/* TYPOGRAPHY */
+.syne{font-family:'Syne',sans-serif}
+
+/* HEADER */
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:20px}
+.logo-area{display:flex;align-items:center;gap:10px}
+.logo-area img{height:36px;width:auto;border-radius:6px}
+.logo-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--lime);letter-spacing:1px}
+.user-info{display:flex;align-items:center;gap:10px}
+.user-badge{font-size:12px;color:var(--muted);background:rgba(255,255,255,0.04);padding:4px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.06)}
+.btn-sm{font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:var(--muted);cursor:pointer;transition:all .2s}
+.btn-sm:hover{border-color:var(--lime);color:var(--lime)}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px}
+.card-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--lime);letter-spacing:1px;text-transform:uppercase;margin-bottom:16px}
+
+/* LOGIN */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.login-box{width:100%;max-width:400px;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:36px 28px;text-align:center}
+.login-logo{height:48px;margin-bottom:20px;border-radius:8px}
+.login-title{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:var(--lime);margin-bottom:6px}
+.login-sub{font-size:13px;color:var(--muted);margin-bottom:28px;line-height:1.6}
+.inp{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:11px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;margin-bottom:10px;outline:none;transition:border-color .2s}
+.inp:focus{border-color:var(--lime)}
+.inp::placeholder{color:var(--muted)}
+.btn-lime{width:100%;background:var(--lime);color:var(--dark);border:none;border-radius:10px;padding:12px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .2s;letter-spacing:.5px}
+.btn-lime:hover{opacity:.88}
+.btn-lime:disabled{opacity:.4;cursor:not-allowed}
+.login-toggle{margin-top:14px;font-size:12px;color:var(--muted)}
+.login-toggle a{color:var(--lime);cursor:pointer;text-decoration:none}
+.err-msg{font-size:12px;color:var(--danger);margin-bottom:8px;text-align:left}
+
+/* TABS */
+.tabs{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap}
+.tab{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;padding:7px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:var(--muted);cursor:pointer;transition:all .2s;text-transform:uppercase}
+.tab.active{background:var(--lime);color:var(--dark);border-color:var(--lime)}
+.tab:hover:not(.active){border-color:var(--lime);color:var(--lime)}
+
+/* PROGRESS */
+.phase-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.phase-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:14px;text-align:center;transition:border-color .3s}
+.phase-card.active{border-color:var(--lime);background:rgba(200,244,0,0.05)}
+.phase-card.done{border-color:var(--accent);background:rgba(77,255,160,0.04)}
+.phase-label{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:4px}
+.phase-days{font-size:11px;color:var(--muted);margin-bottom:8px}
+.phase-pct{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--lime)}
+.phase-bar{height:3px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;margin-top:8px}
+.phase-fill{height:100%;background:var(--lime);border-radius:2px;transition:width .6s ease}
+
+/* DAY COUNTER */
+.day-hero{background:linear-gradient(135deg,rgba(200,244,0,0.1),rgba(77,255,160,0.06));border:1px solid var(--border);border-radius:16px;padding:20px 24px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.day-num{font-family:'Syne',sans-serif;font-size:42px;font-weight:800;color:var(--lime);line-height:1}
+.day-label{font-size:12px;color:var(--muted);margin-top:4px}
+.streak-badge{display:flex;align-items:center;gap:6px;background:rgba(255,209,102,0.1);border:1px solid rgba(255,209,102,0.2);border-radius:10px;padding:8px 14px}
+.streak-num{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--warn)}
+.streak-lbl{font-size:11px;color:var(--warn);opacity:.8}
+
+/* HABITS */
+.habit-row{display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:10px;margin-bottom:8px;transition:border-color .2s}
+.habit-row.checked{border-color:rgba(77,255,160,0.3);background:rgba(77,255,160,0.04)}
+.habit-cb{width:22px;height:22px;border-radius:6px;border:2px solid var(--muted);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.habit-cb.on{background:var(--accent);border-color:var(--accent)}
+.habit-cb.on::after{content:'✓';font-size:13px;color:var(--dark);font-weight:700}
+.habit-name{font-size:13px;color:var(--text);flex:1}
+.habit-streak{font-size:11px;color:var(--warn);flex-shrink:0}
+
+/* FORM */
+.form-group{margin-bottom:14px}
+.form-label{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;display:block}
+.form-hint{font-size:11px;color:rgba(106,138,110,0.7);margin-top:4px;line-height:1.5;font-style:italic}
+textarea.inp{resize:vertical;min-height:80px}
+
+/* SECTION DIVIDER */
+.section-head{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;color:var(--muted);text-transform:uppercase;padding:10px 0 6px;border-bottom:1px solid rgba(255,255,255,0.05);margin-bottom:14px}
+
+/* BUTTONS */
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all .2s}
+.btn-outline:hover{border-color:var(--lime);color:var(--lime)}
+.btn-danger{background:transparent;border:1px solid rgba(255,107,74,0.3);color:var(--danger);border-radius:8px;padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all .2s}
+.btn-danger:hover{background:rgba(255,107,74,0.1)}
+.btn-accent{background:var(--accent);color:var(--dark);border:none;border-radius:8px;padding:9px 18px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:opacity .2s;letter-spacing:.5px}
+.btn-accent:hover{opacity:.85}
+.btn-accent:disabled{opacity:.4;cursor:not-allowed}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+
+/* ADMIN TABLE */
+.admin-table{width:100%;border-collapse:collapse;font-size:13px}
+.admin-table th{text-align:left;font-family:'Syne',sans-serif;font-size:10px;letter-spacing:1px;color:var(--muted);padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.06);text-transform:uppercase}
+.admin-table td{padding:10px;border-bottom:1px solid rgba(255,255,255,0.04);vertical-align:middle}
+.admin-table tr:hover td{background:rgba(255,255,255,0.02)}
+.pct-pill{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+.pct-hi{background:rgba(77,255,160,0.15);color:var(--accent)}
+.pct-mid{background:rgba(255,209,102,0.15);color:var(--warn)}
+.pct-lo{background:rgba(255,107,74,0.15);color:var(--danger)}
+
+/* REFLECTION */
+.reflection-phase{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px;margin-bottom:12px}
+.reflection-phase.unlocked{border-color:rgba(200,244,0,0.2)}
+.reflection-phase.done{border-color:rgba(77,255,160,0.25)}
+.reflection-lock{font-size:12px;color:var(--muted);font-style:italic}
+
+/* AI REPORT */
+.ai-box{background:rgba(96,200,255,0.05);border:1px solid rgba(96,200,255,0.15);border-radius:12px;padding:16px;margin-top:14px;font-size:13px;line-height:1.8;color:#c0e8f8;white-space:pre-wrap}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#1a2e1c;border:1px solid var(--accent);color:var(--accent);padding:10px 20px;border-radius:10px;font-size:13px;opacity:0;transition:all .3s;z-index:999;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px 24px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto}
+.modal-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--lime);margin-bottom:16px}
+
+/* RESPONSIVE */
+@media(max-width:520px){
+  .phase-row{grid-template-columns:1fr}
+  .day-hero{flex-direction:column;text-align:center}
+  .phase-pct{font-size:18px}
+}
+
+/* LOADING */
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.15);border-top-color:var(--lime);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:1px;padding:3px 8px;border-radius:6px;text-transform:uppercase}
+.tag-lime{background:rgba(200,244,0,0.12);color:var(--lime);border:1px solid rgba(200,244,0,0.2)}
+.tag-accent{background:rgba(77,255,160,0.1);color:var(--accent);border:1px solid rgba(77,255,160,0.2)}
+.tag-warn{background:rgba(255,209,102,0.1);color:var(--warn);border:1px solid rgba(255,209,102,0.2)}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────
+const SUPA_URL='https://exqpnofliridwdrcyien.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV4cXBub2ZsaXJpZHdkcmN5aWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MDYwODgsImV4cCI6MjA5MTk4MjA4OH0.xVkvptHGnTDAoQ288uQiAHSct2qpREMzY-2dRdGwt8M';
+const ANTHROPIC_KEY=document.querySelector('meta[name="ak"]')?.content||'';
+const ADMIN_CODE='admin2024';
+const CCM_LOGO='https://www.ccmconsultancy.com/wp-content/uploads/2019/09/cropped-CCM-Square-8-150.png';
+
+const PHASES=[
+  {label:'Phase 1',days:'Days 1–30',range:[1,30]},
+  {label:'Phase 2',days:'Days 31–60',range:[31,60]},
+  {label:'Phase 3',days:'Days 61–90',range:[61,90]}
+];
+
+const REFLECTION_QS=[
+  'What progress have you made on your habits so far?',
+  'What has been your biggest challenge and how did you handle it?',
+  'What has shifted in how you see yourself as a leader?',
+  'What will you focus on or adjust going forward?'
+];
+
+const PLAN_FIELDS=[
+  {key:'keyLearning',label:'Key Learning from the Workshop',hint:'What was your most important insight?',multi:true},
+  {key:'identityShift',label:'Identity Shift',hint:'Complete: "I am the type of person who…"',multi:true},
+  {key:'strengths',label:'Strengths to Build On',hint:'What personal strengths will support your development?',multi:true},
+  {key:'gaps',label:'Potential Gaps to Address',hint:'What areas need most attention?',multi:true},
+  {key:'obstacles',label:'Obstacles & Solutions',hint:'What might get in the way, and how will you overcome it?',multi:true},
+  {key:'accountability',label:'Tracking & Accountability',hint:'How will you track progress? Who will hold you accountable?',multi:true}
+];
+
+const HABIT_LAWS=['Cue (Make it obvious)','Craving (Make it attractive)','Response (Make it easy)','Reward (Make it satisfying)'];
+
+// ─── SUPABASE HELPERS ────────────────────────────────────
+async function dbQ(path,opts={}){
+  try{
+    const r=await fetch(`${SUPA_URL}/rest/v1/${path}`,{
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=representation',...(opts.headers||{})},
+      ...opts
+    });
+    if(!r.ok){const t=await r.text();console.error('DB error',r.status,t);return null;}
+    const ct=r.headers.get('content-type')||'';
+    if(ct.includes('json')){const d=await r.json();return d;}
+    return true;
+  }catch(e){console.error('DB fetch',e);return null;}
+}
+
+async function getUser(email){
+  const d=await dbQ(`pdp_users?email=eq.${encodeURIComponent(email)}&limit=1`);
+  return d&&d.length?d[0]:null;
+}
+
+async function saveUser(u){
+  const exists=await getUser(u.email);
+  if(exists){
+    return await dbQ(`pdp_users?email=eq.${encodeURIComponent(u.email)}`,{method:'PATCH',body:JSON.stringify({...u,updated_at:new Date().toISOString()})});
+  }else{
+    return await dbQ('pdp_users',{method:'POST',body:JSON.stringify({...u,created_at:new Date().toISOString(),updated_at:new Date().toISOString()})});
+  }
+}
+
+async function getAllUsers(){
+  const d=await dbQ('pdp_users?select=*&order=created_at.desc');
+  return d||[];
+}
+
+// ─── STATE ───────────────────────────────────────────────
+let STATE={
+  screen:'login', // login | participant | admin
+  loginMode:'participant', // participant | admin
+  user:null,
+  userData:null,
+  adminTab:'overview',
+  selectedUser:null,
+  aiReport:'',
+  aiLoading:false,
+  saving:false,
+  modal:null
+};
+
+function setState(patch){Object.assign(STATE,patch);render();}
+
+// ─── UTILS ───────────────────────────────────────────────
+function toast(msg,dur=2500){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),dur);
+}
+
+function getDayNum(startDate){
+  if(!startDate)return 1;
+  const diff=Math.floor((Date.now()-new Date(startDate))/(86400000));
+  return Math.max(1,diff+1);
+}
+
+function getPhasePct(userData,phaseIdx){
+  const habits=userData.habits||[];
+  if(!habits.length)return 0;
+  const [s,e]=PHASES[phaseIdx].range;
+  const days=userData.checkins||{};
+  let done=0,total=0;
+  for(let d=s;d<=e;d++){
+    habits.forEach((_,hi)=>{
+      total++;
+      if(days[d]&&days[d][hi])done++;
+    });
+  }
+  return total?Math.round(done/total*100):0;
+}
+
+function getStreak(userData){
+  const day=getDayNum(userData.start_date);
+  const days=userData.checkins||{};
+  let streak=0;
+  for(let d=day;d>=1;d--){
+    const habits=userData.habits||[];
+    const allDone=habits.every((_,hi)=>days[d]&&days[d][hi]);
+    if(allDone)streak++;else break;
+  }
+  return streak;
+}
+
+function pctClass(p){return p>=70?'pct-hi':p>=40?'pct-mid':'pct-lo';}
+
+// ─── RENDER ──────────────────────────────────────────────
+function render(){
+  const app=document.getElementById('app');
+  if(STATE.screen==='login'){app.innerHTML=renderLogin();return;}
+  if(STATE.screen==='participant'){app.innerHTML=renderParticipant();return;}
+  if(STATE.screen==='admin'){app.innerHTML=renderAdmin();return;}
+}
+
+// ─── LOGIN ───────────────────────────────────────────────
+function renderLogin(){
+  return `
+  <div class="login-wrap">
+    <div class="login-box">
+      <img src="${CCM_LOGO}" class="login-logo" alt="CCM">
+      <div class="login-title syne">Personal Development Plan</div>
+      <div class="login-sub">Your 90-day growth journey starts here.<br>Track habits, reflect, and grow.</div>
+      <div style="display:flex;gap:6px;margin-bottom:20px">
+        <button class="tab ${STATE.loginMode==='participant'?'active':''}" onclick="setState({loginMode:'participant'})">Participant</button>
+        <button class="tab ${STATE.loginMode==='admin'?'active':''}" onclick="setState({loginMode:'admin'})">Admin</button>
+      </div>
+      ${STATE.loginMode==='participant'?renderParticipantLogin():renderAdminLogin()}
+    </div>
+  </div>`;
+}
+
+function renderParticipantLogin(){
+  return `
+    <div id="login-err" class="err-msg" style="display:none"></div>
+    <input class="inp" id="li-name" placeholder="Your full name" autocomplete="name">
+    <input class="inp" id="li-email" placeholder="Your email address" type="email" autocomplete="email">
+    <input class="inp" id="li-ws" placeholder="Workshop name (e.g. Sales Excellence)" style="margin-bottom:16px">
+    <button class="btn-lime" onclick="doParticipantLogin()">Enter My PDP →</button>
+    <div style="font-size:11px;color:var(--muted);margin-top:12px;line-height:1.5">Returning? Use the same email to access your existing plan.</div>`;
+}
+
+function renderAdminLogin(){
+  return `
+    <div id="login-err" class="err-msg" style="display:none"></div>
+    <input class="inp" id="li-code" placeholder="Admin code" type="password" style="margin-bottom:16px">
+    <button class="btn-lime" onclick="doAdminLogin()">Access Dashboard →</button>`;
+}
+
+async function doParticipantLogin(){
+  const name=document.getElementById('li-name').value.trim();
+  const email=document.getElementById('li-email').value.trim();
+  const ws=document.getElementById('li-ws').value.trim();
+  const err=document.getElementById('login-err');
+  if(!name||!email){err.style.display='block';err.textContent='Please enter your name and email.';return;}
+  if(!email.includes('@')){err.style.display='block';err.textContent='Please enter a valid email.';return;}
+  err.style.display='none';
+  let userData=await getUser(email);
+  if(!userData){
+    userData={email,name,workshop:ws||'',start_date:new Date().toISOString().split('T')[0],plan:{},habits:[],checkins:{},reflections:{},created_at:new Date().toISOString(),updated_at:new Date().toISOString()};
+    await saveUser(userData);
+  }
+  setState({screen:'participant',user:{name:userData.name,email},userData,activeTab:'dashboard'});
+}
+
+async function doAdminLogin(){
+  const code=document.getElementById('li-code').value.trim();
+  const err=document.getElementById('login-err');
+  if(code!==ADMIN_CODE){err.style.display='block';err.textContent='Invalid admin code.';return;}
+  const users=await getAllUsers();
+  setState({screen:'admin',adminTab:'overview',adminUsers:users});
+}
+
+// ─── PARTICIPANT APP ──────────────────────────────────────
+function renderParticipant(){
+  const u=STATE.userData;
+  const day=getDayNum(u.start_date);
+  const tab=STATE.activeTab||'dashboard';
+  return `
+  <div class="top-bar">
+    <div class="logo-area">
+      <img src="${CCM_LOGO}" alt="CCM">
+      <span class="logo-title">PDP Tracker</span>
+    </div>
+    <div class="user-info">
+      <span class="user-badge">Day ${day}</span>
+      <button class="btn-sm" onclick="downloadPDF()">⬇ PDF</button>
+      <button class="btn-sm" onclick="setState({screen:'login',loginMode:'participant'})">Sign out</button>
+    </div>
+  </div>
+  <div class="tabs">
+    ${['dashboard','plan','habits','reflections'].map(t=>`<button class="tab ${tab===t?'active':''}" onclick="setState({activeTab:'${t}'})">${t.charAt(0).toUpperCase()+t.slice(1)}</button>`).join('')}
+  </div>
+  ${tab==='dashboard'?renderDashboard():tab==='plan'?renderPlan():tab==='habits'?renderHabits():renderReflections()}`;
+}
+
+function renderDashboard(){
+  const u=STATE.userData;
+  const day=getDayNum(u.start_date);
+  const streak=getStreak(u);
+  const habits=u.habits||[];
+  const checkins=u.checkins||{};
+  const todayDone=habits.map((_,i)=>checkins[day]&&checkins[day][i]?true:false);
+  const phaseIdx=day<=30?0:day<=60?1:2;
+  return `
+  <div class="day-hero">
+    <div>
+      <div class="day-num">${day}</div>
+      <div class="day-label">Day of your 90-day journey · ${PHASES[phaseIdx].label}</div>
+    </div>
+    <div class="streak-badge">
+      <div>
+        <div class="streak-num">${streak}</div>
+        <div class="streak-lbl">Day streak 🔥</div>
+      </div>
+    </div>
+  </div>
+  <div class="phase-row">
+    ${PHASES.map((p,i)=>{
+      const pct=getPhasePct(u,i);
+      const isActive=phaseIdx===i;
+      const isDone=i<phaseIdx;
+      return `<div class="phase-card ${isActive?'active':''} ${isDone?'done':''}">
+        <div class="phase-label">${p.label}</div>
+        <div class="phase-days">${p.days}</div>
+        <div class="phase-pct">${pct}%</div>
+        <div class="phase-bar"><div class="phase-fill" style="width:${pct}%"></div></div>
+      </div>`;
+    }).join('')}
+  </div>
+  <div class="card">
+    <div class="card-title">Today's Habits — Day ${day}</div>
+    ${!habits.length?`<div style="font-size:13px;color:var(--muted)">No habits set yet. Go to the <a href="#" onclick="setState({activeTab:'habits'})" style="color:var(--lime)">Habits tab</a> to add your first habit.</div>`:
+    habits.map((h,i)=>`
+      <div class="habit-row ${todayDone[i]?'checked':''}" onclick="toggleCheckin(${day},${i})">
+        <div class="habit-cb ${todayDone[i]?'on':''}"></div>
+        <div class="habit-name">${h.name||'Habit '+(i+1)}</div>
+        <div class="habit-streak">${getHabitStreak(u,i)}🔥</div>
+      </div>`).join('')}
+    <div class="btn-row">
+      <button class="btn-accent" onclick="saveTodayCheckin()">Save Today's Check-in</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Welcome, ${u.name.split(' ')[0]}</div>
+    <p style="font-size:13px;color:var(--muted);line-height:1.7">
+      Congratulations on completing your workshop. This PDP will guide your growth over the next 90 days using James Clear's Atomic Habits framework.<br><br>
+      <strong style="color:var(--text)">Your goal:</strong> Build ${habits.length||'your'} daily habits, reflect at Days 30, 60, and 90, and track your progress across three phases.
+    </p>
+  </div>`;
+}
+
+function getHabitStreak(u,habitIdx){
+  const day=getDayNum(u.start_date);
+  const days=u.checkins||{};
+  let streak=0;
+  for(let d=day;d>=1;d--){
+    if(days[d]&&days[d][habitIdx])streak++;else break;
+  }
+  return streak;
+}
+
+async function toggleCheckin(day,habitIdx){
+  const u=STATE.userData;
+  const checkins=JSON.parse(JSON.stringify(u.checkins||{}));
+  if(!checkins[day])checkins[day]={};
+  checkins[day][habitIdx]=!checkins[day][habitIdx];
+  STATE.userData.checkins=checkins;
+  render();
+}
+
+async function saveTodayCheckin(){
+  const u=STATE.userData;
+  await saveUser(u);
+  toast('✓ Check-in saved!');
+}
+
+// ─── PLAN ─────────────────────────────────────────────────
+function renderPlan(){
+  const u=STATE.userData;
+  const plan=u.plan||{};
+  return `
+  <div class="card">
+    <div class="card-title">My Development Plan</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:18px;line-height:1.6">Complete your plan below. Your answers are saved automatically when you click Save.</p>
+    ${PLAN_FIELDS.map(f=>`
+      <div class="form-group">
+        <label class="form-label">${f.label}</label>
+        <textarea class="inp" id="plan-${f.key}" rows="3" placeholder="${f.hint}">${plan[f.key]||''}</textarea>
+      </div>`).join('')}
+    <div class="section-head">My Habits (Atomic Habits Framework)</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6">Define up to 3 habits using James Clear's 4 Laws. Be specific and make each step as easy as possible.</p>
+    ${[0,1,2].map(i=>`
+      <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:14px;margin-bottom:12px">
+        <div class="form-label" style="margin-bottom:10px">Habit ${i+1}${i===2?' (Optional)':''}</div>
+        <div class="form-group">
+          <input class="inp" id="habit-${i}-name" placeholder="Habit name (e.g. Read 10 pages each morning)" value="${(u.habits&&u.habits[i]&&u.habits[i].name)||''}">
+        </div>
+        ${HABIT_LAWS.map((law,li)=>`
+          <div class="form-group">
+            <label class="form-label">${law}</label>
+            <input class="inp" id="habit-${i}-law-${li}" placeholder="How will you apply this law?" value="${(u.habits&&u.habits[i]&&u.habits[i].laws&&u.habits[i].laws[li])||''}">
+          </div>`).join('')}
+      </div>`).join('')}
+    <button class="btn-lime" onclick="savePlan()" style="margin-top:6px">${STATE.saving?'<span class="spinner"></span>Saving...':'Save My Plan'}</button>
+  </div>`;
+}
+
+async function savePlan(){
+  if(STATE.saving)return;
+  setState({saving:true});
+  const u=STATE.userData;
+  const plan={};
+  PLAN_FIELDS.forEach(f=>{
+    const el=document.getElementById('plan-'+f.key);
+    if(el)plan[f.key]=el.value.trim();
+  });
+  const habits=[];
+  [0,1,2].forEach(i=>{
+    const name=document.getElementById(`habit-${i}-name`).value.trim();
+    if(name){
+      const laws=HABIT_LAWS.map((_,li)=>(document.getElementById(`habit-${i}-law-${li}`)||{}).value||'');
+      habits.push({name,laws});
+    }
+  });
+  u.plan=plan;u.habits=habits;
+  await saveUser(u);
+  STATE.userData=u;
+  setState({saving:false});
+  toast('✓ Plan saved successfully!');
+}
+
+// ─── HABITS ───────────────────────────────────────────────
+function renderHabits(){
+  const u=STATE.userData;
+  const habits=u.habits||[];
+  const day=getDayNum(u.start_date);
+  const checkins=u.checkins||{};
+  if(!habits.length)return `
+    <div class="card">
+      <div class="card-title">My Habits</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px">You haven't set up your habits yet. Go to the <a href="#" onclick="setState({activeTab:'plan'})" style="color:var(--lime)">Plan tab</a> to add your habits first.</p>
+    </div>`;
+
+  // Build a 7-day grid
+  const startDay=Math.max(1,day-6);
+  const days=[];
+  for(let d=startDay;d<=day;d++)days.push(d);
+
+  return `
+  <div class="card">
+    <div class="card-title">Habit Tracker — Last 7 Days</div>
+    <div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:360px">
+      <tr>
+        <th style="text-align:left;padding:6px 8px;color:var(--muted);font-size:10px;letter-spacing:1px;text-transform:uppercase">Habit</th>
+        ${days.map(d=>`<th style="text-align:center;padding:6px 4px;color:var(--muted);font-size:10px">D${d}</th>`).join('')}
+        <th style="text-align:center;padding:6px 4px;color:var(--muted);font-size:10px;letter-spacing:1px;text-transform:uppercase">Total</th>
+      </tr>
+      ${habits.map((h,i)=>{
+        const total=Object.keys(checkins).filter(d=>checkins[d][i]).length;
+        return `<tr>
+          <td style="padding:8px;color:var(--text)">${h.name}</td>
+          ${days.map(d=>`<td style="text-align:center;padding:4px" onclick="toggleCheckin(${d},${i});saveTodayCheckin()">
+            <div style="width:22px;height:22px;border-radius:5px;background:${checkins[d]&&checkins[d][i]?'var(--accent)':'rgba(255,255,255,0.05)'};margin:auto;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px">
+              ${checkins[d]&&checkins[d][i]?'✓':''}
+            </div></td>`).join('')}
+          <td style="text-align:center;padding:8px"><span class="pct-pill ${pctClass(Math.round(total/day*100))}">${total}/${day}</span></td>
+        </tr>`;
+      }).join('')}
+    </table>
+    </div>
+    <div class="btn-row">
+      <button class="btn-accent" onclick="saveTodayCheckin()">Save Changes</button>
+    </div>
+  </div>
+  ${habits.map((h,i)=>{
+    const streak=getHabitStreak(u,i);
+    const total=Object.keys(checkins).filter(d=>checkins[d]&&checkins[d][i]).length;
+    const pct=day?Math.round(total/day*100):0;
+    return `<div class="card" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div>
+        <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px">${h.name}</div>
+        <div style="font-size:11px;color:var(--muted)">Current streak: <span style="color:var(--warn)">${streak} days 🔥</span></div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:var(--lime)">${pct}%</div>
+        <div style="font-size:11px;color:var(--muted)">completion rate</div>
+      </div>
+    </div>`;
+  }).join('')}`;
+}
+
+// ─── REFLECTIONS ──────────────────────────────────────────
+function renderReflections(){
+  const u=STATE.userData;
+  const day=getDayNum(u.start_date);
+  const reflections=u.reflections||{};
+  return `
+  <div class="card">
+    <div class="card-title">Phase Reflections</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.6">Reflection unlocks at the end of each phase. Take time to answer honestly — this is where the real growth happens.</p>
+    ${PHASES.map((p,i)=>{
+      const unlockDay=p.range[1];
+      const isUnlocked=day>=unlockDay;
+      const isDone=reflections[i]&&REFLECTION_QS.every((_,qi)=>reflections[i][qi]);
+      return `
+      <div class="reflection-phase ${isUnlocked?'unlocked':''} ${isDone?'done':''}">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:${isUnlocked?'14px':'0'}">
+          <div>
+            <span class="tag ${isDone?'tag-accent':isUnlocked?'tag-lime':''}">
+              ${isDone?'✓ Complete':isUnlocked?'Unlocked':'Locked'}
+            </span>
+            <span style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text);margin-left:10px">${p.label} Reflection</span>
+            <span style="font-size:11px;color:var(--muted);margin-left:8px">${p.days}</span>
+          </div>
+        </div>
+        ${isUnlocked?`
+          ${REFLECTION_QS.map((q,qi)=>`
+            <div class="form-group">
+              <label class="form-label">${q}</label>
+              <textarea class="inp" id="ref-${i}-${qi}" rows="3" placeholder="Write your honest reflection...">${(reflections[i]&&reflections[i][qi])||''}</textarea>
+            </div>`).join('')}
+          <button class="btn-accent" onclick="saveReflection(${i})">Save ${p.label} Reflection</button>
+        `:`<div class="reflection-lock" style="margin-top:10px">Unlocks on Day ${unlockDay} · You are on Day ${day}</div>`}
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+async function saveReflection(phaseIdx){
+  const u=STATE.userData;
+  const reflections=JSON.parse(JSON.stringify(u.reflections||{}));
+  reflections[phaseIdx]={};
+  REFLECTION_QS.forEach((_,qi)=>{
+    const el=document.getElementById(`ref-${phaseIdx}-${qi}`);
+    if(el)reflections[phaseIdx][qi]=el.value.trim();
+  });
+  u.reflections=reflections;
+  await saveUser(u);
+  STATE.userData=u;
+  toast('✓ Reflection saved!');
+  render();
+}
+
+// ─── ADMIN ────────────────────────────────────────────────
+function renderAdmin(){
+  const tab=STATE.adminTab;
+  return `
+  <div class="top-bar">
+    <div class="logo-area">
+      <img src="${CCM_LOGO}" alt="CCM">
+      <span class="logo-title">Admin Dashboard</span>
+    </div>
+    <div class="user-info">
+      <button class="btn-sm" onclick="refreshAdmin()">↻ Refresh</button>
+      <button class="btn-sm" onclick="exportCSV()">⬇ CSV</button>
+      <button class="btn-sm" onclick="setState({screen:'login',loginMode:'admin'})">Sign out</button>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab ${tab==='overview'?'active':''}" onclick="setState({adminTab:'overview'})">Overview</button>
+    <button class="tab ${tab==='detail'?'active':''}" onclick="setState({adminTab:'detail'})">Participant Detail</button>
+  </div>
+  ${tab==='overview'?renderAdminOverview():renderAdminDetail()}`;
+}
+
+function renderAdminOverview(){
+  const users=STATE.adminUsers||[];
+  if(!users.length)return `<div class="card"><p style="color:var(--muted);font-size:13px">No participants yet.</p></div>`;
+  return `
+  <div class="card">
+    <div class="card-title">All Participants (${users.length})</div>
+    <div style="overflow-x:auto">
+    <table class="admin-table">
+      <thead><tr>
+        <th>Name</th><th>Workshop</th><th>Day</th>
+        <th>Ph1</th><th>Ph2</th><th>Ph3</th><th>Habits</th><th>Actions</th>
+      </tr></thead>
+      <tbody>
+        ${users.map(u=>{
+          const day=getDayNum(u.start_date);
+          const habits=(u.habits||[]).length;
+          return `<tr>
+            <td><strong>${u.name}</strong><br><span style="font-size:11px;color:var(--muted)">${u.email}</span></td>
+            <td style="font-size:12px;color:var(--muted)">${u.workshop||'—'}</td>
+            <td><span class="tag tag-lime">D${day}</span></td>
+            ${[0,1,2].map(i=>{const p=getPhasePct(u,i);return `<td><span class="pct-pill ${pctClass(p)}">${p}%</span></td>`;}).join('')}
+            <td style="font-size:12px">${habits} habit${habits!==1?'s':''}</td>
+            <td>
+              <button class="btn-sm" onclick="viewUser('${u.email}')">View</button>
+              <button class="btn-sm" onclick="adminDownloadPDF('${u.email}')">PDF</button>
+            </td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function renderAdminDetail(){
+  const u=STATE.selectedUser;
+  if(!u)return `<div class="card"><p style="color:var(--muted);font-size:13px">Select a participant from the Overview tab.</p></div>`;
+  const day=getDayNum(u.start_date);
+  const plan=u.plan||{};
+  const habits=u.habits||[];
+  const reflections=u.reflections||{};
+  return `
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--lime)">${u.name}</div>
+        <div style="font-size:12px;color:var(--muted)">${u.email} · ${u.workshop||'No workshop'} · Day ${day}</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-accent" onclick="generateAIReport('${u.email}')" ${STATE.aiLoading?'disabled':''}>
+          ${STATE.aiLoading?'<span class="spinner"></span>Generating...':'✦ Generate AI Report'}
+        </button>
+        <button class="btn-outline" onclick="adminDownloadPDF('${u.email}')">⬇ PDF</button>
+      </div>
+    </div>
+    <div class="section-head">Development Plan</div>
+    ${PLAN_FIELDS.map(f=>`
+      <div style="margin-bottom:12px">
+        <div style="font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">${f.label}</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.6;background:rgba(255,255,255,0.02);border-radius:8px;padding:10px">${plan[f.key]||'<span style="color:var(--muted);font-style:italic">Not filled in</span>'}</div>
+      </div>`).join('')}
+    <div class="section-head">Habits</div>
+    ${!habits.length?'<p style="font-size:13px;color:var(--muted)">No habits set.</p>':
+    habits.map((h,i)=>{
+      const total=Object.keys(u.checkins||{}).filter(d=>u.checkins[d]&&u.checkins[d][i]).length;
+      const pct=day?Math.round(total/day*100):0;
+      return `<div style="margin-bottom:10px;background:rgba(255,255,255,0.02);border-radius:8px;padding:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <strong style="font-size:13px">${h.name}</strong>
+          <span class="pct-pill ${pctClass(pct)}">${pct}%</span>
+        </div>
+        ${HABIT_LAWS.map((law,li)=>`<div style="font-size:11px;color:var(--muted);margin-top:4px"><em>${law}:</em> ${h.laws&&h.laws[li]||'—'}</div>`).join('')}
+      </div>`;
+    }).join('')}
+    <div class="section-head">Reflections</div>
+    ${PHASES.map((p,i)=>`
+      <div style="margin-bottom:14px">
+        <div style="font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">${p.label} · ${p.days}</div>
+        ${reflections[i]?REFLECTION_QS.map((q,qi)=>`
+          <div style="margin-bottom:8px">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:3px">${q}</div>
+            <div style="font-size:13px;line-height:1.6;background:rgba(255,255,255,0.02);border-radius:8px;padding:8px">${reflections[i][qi]||'—'}</div>
+          </div>`).join('')
+        :`<div style="font-size:12px;color:var(--muted);font-style:italic">Not completed yet</div>`}
+      </div>`).join('')}
+    ${STATE.aiReport?`<div class="section-head">AI Coaching Report</div><div class="ai-box">${STATE.aiReport}</div>`:''}
+  </div>`;
+}
+
+async function viewUser(email){
+  const users=STATE.adminUsers||[];
+  const u=users.find(x=>x.email===email);
+  setState({adminTab:'detail',selectedUser:u,aiReport:''});
+}
+
+async function refreshAdmin(){
+  const users=await getAllUsers();
+  setState({adminUsers:users});
+  toast('✓ Refreshed');
+}
+
+// ─── AI REPORT ────────────────────────────────────────────
+async function generateAIReport(email){
+  if(STATE.aiLoading)return;
+  if(!ANTHROPIC_KEY||ANTHROPIC_KEY==='ANTHROPIC_KEY_PLACEHOLDER'){
+    toast('⚠ AI key not configured. Add it in Netlify.');
+    return;
+  }
+  const users=STATE.adminUsers||[];
+  const u=users.find(x=>x.email===email)||STATE.selectedUser;
+  if(!u)return;
+  setState({aiLoading:true,aiReport:''});
+
+  const day=getDayNum(u.start_date);
+  const habits=u.habits||[];
+  const checkins=u.checkins||{};
+  const reflections=u.reflections||{};
+  const plan=u.plan||{};
+
+  const habitStats=habits.map((h,i)=>{
+    const done=Object.keys(checkins).filter(d=>checkins[d]&&checkins[d][i]).length;
+    return `${h.name}: ${done}/${day} days (${day?Math.round(done/day*100):0}%)`;
+  }).join('\n');
+
+  const reflText=PHASES.map((p,i)=>reflections[i]?
+    `${p.label}:\n${REFLECTION_QS.map((q,qi)=>`Q: ${q}\nA: ${reflections[i][qi]||'No answer'}`).join('\n')}`:
+    `${p.label}: Not completed`).join('\n\n');
+
+  const prompt=`You are an expert Learning & Development coach at CCM Consultancy. Write a professional, warm, and insightful coaching report for this participant.
+
+PARTICIPANT: ${u.name}
+WORKSHOP: ${u.workshop||'Not specified'}
+DAY: ${day} of 90
+
+DEVELOPMENT PLAN:
+${PLAN_FIELDS.map(f=>`${f.label}: ${plan[f.key]||'Not completed'}`).join('\n')}
+
+HABIT PERFORMANCE:
+${habitStats||'No habits set'}
+
+PHASE REFLECTIONS:
+${reflText}
+
+Write a 4-section report:
+1. Overall Progress Summary (2-3 sentences)
+2. Habit Analysis (specific observations about each habit)
+3. Growth Insights (patterns from reflections, identity shifts noticed)
+4. Recommendations for Next Phase (3 specific, actionable suggestions)
+
+Be specific, encouraging, and professional. Reference actual data and quotes from their reflections where possible.`;
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':ANTHROPIC_KEY,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    const data=await res.json();
+    const report=data.content?.[0]?.text||'Report generation failed. Please try again.';
+    setState({aiLoading:false,aiReport:report});
+  }catch(e){
+    console.error(e);
+    setState({aiLoading:false,aiReport:'Error generating report. Please check your connection and try again.'});
+  }
+}
+
+// ─── PDF ──────────────────────────────────────────────────
+async function downloadPDF(){
+  const u=STATE.userData;
+  generatePDFForUser(u,'My Personal Development Plan');
+}
+
+async function adminDownloadPDF(email){
+  const users=STATE.adminUsers||[];
+  const u=users.find(x=>x.email===email)||STATE.selectedUser;
+  if(!u)return;
+  generatePDFForUser(u,`PDP - ${u.name}`);
+}
+
+function generatePDFForUser(u,filename){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const W=210;const margin=20;const lineH=6;let y=20;
+
+  function addText(text,size,bold,color){
+    doc.setFontSize(size);
+    doc.setFont('helvetica',bold?'bold':'normal');
+    doc.setTextColor(...(color||[232,245,224]));
+    const lines=doc.splitTextToSize(String(text||''),W-margin*2);
+    lines.forEach(l=>{
+      if(y>270){doc.addPage();y=20;}
+      doc.text(l,margin,y);
+      y+=lineH;
+    });
+    y+=2;
+  }
+
+  // Dark background
+  doc.setFillColor(10,26,12);
+  doc.rect(0,0,210,297,'F');
+
+  // Header
+  doc.setFillColor(15,30,18);
+  doc.rect(0,0,210,40,'F');
+  addText('CCM CONSULTANCY',8,true,[200,244,0]);
+  y-=4;
+  addText('Personal Development Plan',18,true,[232,245,224]);
+  addText(`${u.name} · ${u.workshop||'Workshop'} · Day ${getDayNum(u.start_date)} of 90`,10,false,[106,138,110]);
+  y+=4;
+
+  addText('DEVELOPMENT PLAN',9,true,[200,244,0]);
+  const plan=u.plan||{};
+  PLAN_FIELDS.forEach(f=>{
+    addText(f.label,10,true,[200,244,0]);
+    addText(plan[f.key]||'Not completed',9,false,[180,200,180]);
+  });
+
+  y+=4;
+  addText('HABITS',9,true,[200,244,0]);
+  const habits=u.habits||[];
+  const day=getDayNum(u.start_date);
+  const checkins=u.checkins||{};
+  habits.forEach((h,i)=>{
+    const done=Object.keys(checkins).filter(d=>checkins[d]&&checkins[d][i]).length;
+    const pct=day?Math.round(done/day*100):0;
+    addText(`${h.name} — ${pct}% completion`,10,true,[77,255,160]);
+    HABIT_LAWS.forEach((law,li)=>addText(`${law}: ${h.laws&&h.laws[li]||'—'}`,9,false,[180,200,180]));
+  });
+
+  y+=4;
+  addText('REFLECTIONS',9,true,[200,244,0]);
+  const reflections=u.reflections||{};
+  PHASES.forEach((p,i)=>{
+    addText(p.label+' · '+p.days,10,true,[77,255,160]);
+    if(reflections[i]){
+      REFLECTION_QS.forEach((q,qi)=>{
+        addText(q,9,true,[200,244,0]);
+        addText(reflections[i][qi]||'—',9,false,[180,200,180]);
+      });
+    }else{
+      addText('Not completed yet',9,false,[106,138,110]);
+    }
+  });
+
+  if(STATE.aiReport){
+    y+=4;
+    addText('AI COACHING REPORT',9,true,[200,244,0]);
+    addText(STATE.aiReport,9,false,[180,200,180]);
+  }
+
+  doc.save(`${filename.replace(/\s+/g,'-')}.pdf`);
+  toast('✓ PDF downloaded!');
+}
+
+// ─── CSV EXPORT ───────────────────────────────────────────
+async function exportCSV(){
+  const users=STATE.adminUsers||[];
+  if(!users.length){toast('No data to export');return;}
+  const headers=['Name','Email','Workshop','Start Date','Day','Phase1%','Phase2%','Phase3%',...PLAN_FIELDS.map(f=>f.label),...[0,1,2].flatMap(i=>[`Habit${i+1}Name`,...HABIT_LAWS.map(l=>`Habit${i+1} ${l}`),...REFLECTION_QS.map((q,qi)=>`Ph${Math.floor(qi/4)+1} Q${qi%4+1}`)]) ];
+  const rows=users.map(u=>{
+    const day=getDayNum(u.start_date);
+    const plan=u.plan||{};
+    const habits=u.habits||[];
+    const reflections=u.reflections||{};
+    return [
+      u.name,u.email,u.workshop||'',u.start_date||'',day,
+      getPhasePct(u,0),getPhasePct(u,1),getPhasePct(u,2),
+      ...PLAN_FIELDS.map(f=>plan[f.key]||''),
+      ...[0,1,2].flatMap(i=>[
+        habits[i]?.name||'',
+        ...HABIT_LAWS.map((_,li)=>habits[i]?.laws?.[li]||''),
+        ...REFLECTION_QS.map((_,qi)=>reflections[Math.floor(qi/4)]?.[qi%4]||'')
+      ])
+    ].map(v=>'"'+String(v).replace(/"/g,'""')+'"');
+  });
+  const csv=[headers.map(h=>'"'+h+'"').join(','),...rows.map(r=>r.join(','))].join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='pdp-report.csv';a.click();
+  toast('✓ CSV exported!');
+}
+
+// ─── INIT ─────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
