@@ -1,0 +1,8 @@
+[build]
+  functions = "netlify/functions"
+
+[[plugins]]
+  package = "@netlify/plugin-scheduled-functions"
+
+[functions."send-reminders"]
+  schedule = "0 8 * * *"
