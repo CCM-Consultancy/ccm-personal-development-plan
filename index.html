@@ -295,7 +295,6 @@ function rLogin(){
       </div>
     
     <div id="lerr" class="err" style="display:none"></div>
-    <a href="#" onclick="set({loginMode:'a',loginStep:'email'});return false;" style="display:block;text-align:center;color:var(--muted);font-size:11px;margin-top:16px;text-decoration:none;">Admin access</a>
     ${isP?`
       ${S.loginStep==='new'?`
         <div style="font-size:12px;color:var(--muted);margin-bottom:14px;padding:10px 12px;background:var(--surface2);border-radius:var(--radius-sm)">
@@ -316,6 +315,7 @@ function rLogin(){
       `:`
         <input class="inp" id="le0" placeholder="Your email address" type="email" autocomplete="email" style="margin-bottom:14px">
         <button class="btn-main" onclick="doCheckEmail()">Continue →</button>
+        <a href="#" onclick="set({loginMode:'a',loginStep:'email'});return false;" style="display:block;text-align:center;color:var(--muted);font-size:11px;margin-top:14px;text-decoration:none;">Admin access</a>
       `}
     `:`
       <input class="inp" id="lac" placeholder="Admin code" type="password" style="margin-bottom:14px">
