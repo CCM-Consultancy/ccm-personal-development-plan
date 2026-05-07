@@ -233,6 +233,7 @@ let S={
   step:0,adminTab:'list',adminUsers:[],
   selUser:null,aiReport:'',aiLoading:false,saving:false
 };
+(function(){const p=new URLSearchParams(window.location.search);if(p.get('email'))S.prefillEmail=p.get('email');if(p.get('name'))S.prefillName=p.get('name');if(p.get('ws'))S.prefillWs=p.get('ws');})();
 function safe(s){
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
@@ -291,7 +292,9 @@ function rLogin(){
     </div>`:''}
     <div class="tabs">
       <button class="tab ${isP?'on':''}" onclick="set({loginMode:'p'})">Participant</button>
-      <button class="tab ${!isP?'on':''}" onclick="set({loginMode:'a'})">Admin</button>
+      </div>
+    <div style="text-align:center;margin-top:16px">
+      <a href="#" onclick="set({loginMode:'a'})" style="font-size:10px;color:var(--muted);opacity:0.4;text-decoration:none">Admin access</a>
     </div>
     <div id="lerr" class="err" style="display:none"></div>
     ${isP?`
@@ -948,13 +951,13 @@ Be specific, encouraging, and reference actual data and their own words where po
 }
 
 // ── PDF ──────────────────────────────────────────────────
-function doDownloadPDF(){genPDF(S.ud);}
+function doDownloadPDF(){genPDF(S.ud,true);}
 function adminPDF(email){
   const u=(S.adminUsers||[]).find(x=>x.email===email)||S.selUser;
   if(u)genPDF(u);
 }
 
-function genPDF(u){
+function genPDF(u,isParticipant){
   var jsPDFObj=window.jspdf;
   var doc=new jsPDFObj.jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
   var W=210,M=20,y=0,lh=6,RW=W-M*2;
@@ -964,9 +967,11 @@ function genPDF(u){
     doc.addPage();
     doc.setFillColor(247,245,242);
     doc.rect(0,0,210,297,'F');
-    doc.setFillColor(212,35,26);doc.rect(0,0,210,8,'F');
-    doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(255,255,255);
-    doc.text('CCM Consultancy  ·  Personal Development Plan  ·  '+safe(u.name),M,5.5);
+    doc.setFillColor(255,255,255);doc.rect(0,0,210,8,'F');
+    doc.setDrawColor(212,35,26);doc.setLineWidth(0.5);doc.line(0,8,210,8);
+    try{doc.addImage('./ccm_logo_rgb.png','PNG',M,1,20,6);}catch(e){}
+    doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(120,120,120);
+    doc.text(safe(u.name)+' ·  Personal Development Plan',M+25,5.5);
     y=18;
   }
 
@@ -1020,13 +1025,13 @@ function genPDF(u){
   // ── PAGE 1 START — no cover ─────────────────────────────
   doc.setFillColor(247,245,242);
   doc.rect(0,0,210,297,'F');
-  // Header banner
-  doc.setFillColor(212,35,26);
+   // Header banner
+  doc.setFillColor(255,255,255);
   doc.rect(0,0,210,18,'F');
-  doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
-  doc.text('CCM CONSULTANCY',M,7);
-  doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(255,200,198);
-  doc.text('Personal Development Plan  ·  Confidential',M,13);
+  doc.setDrawColor(212,35,26);doc.setLineWidth(0.8);doc.line(0,18,210,18);
+  try{doc.addImage('./ccm_logo_rgb.png','PNG',M,2,30,12);}catch(e){}
+  doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(120,120,120);
+  doc.text('Personal Development Plan  ·  Confidential',M+35,11);
   // Participant line
   y=26;
   doc.setFontSize(16);doc.setFont('helvetica','bold');doc.setTextColor(20,18,16);
@@ -1107,7 +1112,7 @@ function genPDF(u){
   }
 
   // ── AI REPORT (if generated) ─────────────────────────────
-  if(S.aiReport){
+  if(S.aiReport && !isParticipant){
     spacer();
     heading1('AI COACHING REPORT');
     spacer();
