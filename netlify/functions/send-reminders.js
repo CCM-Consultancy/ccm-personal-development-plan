@@ -1,5 +1,5 @@
 const SUPA_URL = 'https://exqpnofliridwdrcyien.supabase.co';
-const SUPA_KEY = process.env.SUPA_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV4cXBub2ZsaXJpZHdkcmN5aWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MDYwODgsImV4cCI6MjA5MTk4MjA4OH0.xVkvp';
+const SUPA_KEY = process.env.SUPA_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV4cXBub2ZsaXJpZHdkcmN5aWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MDYwODgsImV4cCI6MjA5MTk4MjA4OH0.xVkvptHGnTDAoQ288uQiAHSct2qpREMzY-2dRdGwt8M';eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV4cXBub2ZsaXJpZHdkcmN5aWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MDYwODgsImV4cCI6MjA5MTk4MjA4OH0.xVkvp';
 
 const RESEND_KEY = process.env.RESEND_API_KEY;
 const FROM = 'CCM Consultancy <onboarding@resend.dev>';
