@@ -9,7 +9,7 @@ exports.handler = async function() {
     return { statusCode: 500, body: 'RESEND_API_KEY not set' };
   }
 
-  const res = await fetch(`${SUPA_URL}/rest/v1/pdp_users?select=email,name,start_date`, {
+  const res = await fetch(`${SUPA_URL}/rest/v1/pdp_users?select=email,name,start_date,workshop`, {
     headers: {
       'apikey': SUPA_KEY,
       'Authorization': `Bearer ${SUPA_KEY}`
@@ -32,13 +32,72 @@ exports.handler = async function() {
 
     let subject = null;
     let dayLabel = null;
-    if (daysDiff === 30) { subject = 'Your 30-Day PDP Check-In'; dayLabel = '30'; }
-    else if (daysDiff === 60) { subject = 'Your 60-Day PDP Check-In'; dayLabel = '60'; }
-    else if (daysDiff === 90) { subject = 'Your 90-Day PDP Check-In'; dayLabel = '90'; }
+    let bodyText = null;
+
+    if (daysDiff === 30) {
+      subject = 'Your 30-Day PDP Check-In';
+      dayLabel = '30';
+      bodyText = 'It has now been 30 days since you started your Personal Development Plan - an important milestone. This is a gentle reminder to log in, update your habit tracking, and reflect on your progress so far. Consistent check-ins are a strong predictor of long-term success, and your continued commitment is key to maintaining momentum.';
+    } else if (daysDiff === 60) {
+      subject = 'Your 60-Day PDP Check-In';
+      dayLabel = '60';
+      bodyText = 'It has now been 60 days since you started your Personal Development Plan - well done for building momentum. This is a gentle reminder to log in, review your habits, and reflect on the progress you have made so far. Staying consistent with small daily actions is one of the best ways to keep moving forward.';
+    } else if (daysDiff === 90) {
+      subject = 'Your 90-Day PDP Check-In';
+      dayLabel = '90';
+      bodyText = 'It has now been 90 days since you started your Personal Development Plan - an important point in your journey. This is a friendly reminder to log in, review your habit tracking, and reflect on how far you have come. Sustaining progress takes consistency, and your commitment over the past 90 days is something to be proud of. As you review your progress, take a moment to plan your next steps and consider what you would like to focus on next.';
+    }
+
     if (!subject) continue;
 
     const firstName = (user.name || 'there').split(' ')[0];
-    const html = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;"><div style="background:#D4231A;padding:20px 24px;"><p style="color:#fff;font-size:18px;font-weight:bold;margin:0;">CCM Consultancy</p></div><div style="padding:28px 24px;background:#ffffff;"><p style="font-size:16px;color:#1a1a1a;">Hi ${firstName},</p><p style="color:#333;">It has been <strong>${dayLabel} days</strong> since you started your Personal Development Plan. This is your reminder to log in, track your habits, and reflect on your progress.</p><p style="color:#333;">Consistent check-ins are one of the strongest predictors of success - well done for staying the course.</p><div style="text-align:center;margin:32px 0;"><a href="${APP_URL}" style="background:#D4231A;color:#fff;text-decoration:none;padding:12px 28px;border-radius:6px;font-size:15px;font-weight:bold;">Open My PDP</a></div><p style="color:#888;font-size:13px;">If you have any questions, reach out to your CCM facilitator.</p></div><div style="background:#f5f3f0;padding:14px 24px;text-align:center;"><p style="color:#aaa;font-size:11px;margin:0;">CCM Consultancy - Personal Development Plan</p></div></div>`;
+    const workshopName = user.workshop || 'Personal Development Plan';
+
+    const html = `
+<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:0;background:#f5f3f0;font-family:Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f3f0;padding:30px 0;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;">
+
+        <!-- Header -->
+        <tr>
+          <td style="background:#ffffff;padding:24px 32px;border-bottom:3px solid #D4231A;">
+            <p style="margin:0;font-size:13px;font-weight:700;color:#D4231A;text-transform:uppercase;letter-spacing:1px;">${workshopName}</p>
+            <p style="margin:4px 0 0;font-size:20px;font-weight:700;color:#1a1a1a;">Personal Development Plan Check-In</p>
+          </td>
+        </tr>
+
+        <!-- Body -->
+        <tr>
+          <td style="padding:32px 32px 24px;">
+            <p style="margin:0 0 20px;font-size:16px;color:#1a1a1a;">Hi ${firstName},</p>
+            <p style="margin:0 0 24px;font-size:15px;color:#333;line-height:1.6;">${bodyText}</p>
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td align="center" style="padding:8px 0 28px;">
+                  <a href="${APP_URL}" style="background:#D4231A;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:6px;font-size:15px;font-weight:bold;display:inline-block;mso-padding-alt:0;line-height:normal;"><!--[if mso]><i style="letter-spacing:34px;mso-font-width:-100%;mso-text-raise:30pt">&nbsp;</i><![endif]-->Check In<!--[if mso]><i style="letter-spacing:34px;mso-font-width:-100%">&nbsp;</i><![endif]--></a>
+                </td>
+              </tr>
+            </table>
+            <p style="margin:0;font-size:14px;color:#555;">Warm regards,</p>
+            <p style="margin:4px 0 0;font-size:14px;font-weight:bold;color:#1a1a1a;">CCM Consultancy</p>
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="background:#f5f3f0;padding:16px 32px;text-align:center;border-top:1px solid #e8e5e2;">
+            <p style="margin:0;font-size:11px;color:#aaa;">CCM Consultancy - Personal Development Plan</p>
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
 
     await fetch('https://api.resend.com/emails', {
       method: 'POST',
